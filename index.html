@@ -1,0 +1,1788 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tollens Plan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,600&display=swap">
+<style>
+/* Layout: a lab-notebook index. Sticky contents rail on the left, one reading column of sections, status chips on every decision. */
+:root{
+  --paper:#F3F5F8; --surface:#FFFFFF; --ink:#0E1B2C; --muted:#566273; --line:#D6DCE4; --line-strong:#8A95A4;
+  --accent:#1F4F8F; --accent-soft:#E4ECF7; --silver-a:#9AA3AF; --silver-b:#0E1B2C; --ink-sub:#C3CDDA; --dot:#CDD5DF;
+  --ok:#2A7653; --ok-soft:#E2F1E9; --warn:#8F5E0C; --warn-soft:#F6EDDA; --bad:#AE3F2D; --bad-soft:#F7E5E1; --prop:#4C44AC; --prop-soft:#EBE9F9;
+  --f-display:"Newsreader","Iowan Old Style","Palatino Linotype",Georgia,serif;
+  --f-body:"IBM Plex Sans",-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0B1018; --surface:#121A26; --ink:#E4E9F0; --muted:#9BA6B6; --line:#243142; --line-strong:#5D6B7E;
+    --accent:#8EB4EA; --accent-soft:#182840; --silver-a:#F4F6F9; --silver-b:#AEB8C5; --ink-sub:#3D4858; --dot:#1F2B3B;
+    --ok:#70CFA0; --ok-soft:#13281E; --warn:#E3B962; --warn-soft:#2A2213; --bad:#F18C77; --bad-soft:#2D1814; --prop:#ABA3F3; --prop-soft:#1E1B38;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0B1018; --surface:#121A26; --ink:#E4E9F0; --muted:#9BA6B6; --line:#243142; --line-strong:#5D6B7E;
+  --accent:#8EB4EA; --accent-soft:#182840; --silver-a:#F4F6F9; --silver-b:#AEB8C5; --ink-sub:#3D4858; --dot:#1F2B3B;
+  --ok:#70CFA0; --ok-soft:#13281E; --warn:#E3B962; --warn-soft:#2A2213; --bad:#F18C77; --bad-soft:#2D1814; --prop:#ABA3F3; --prop-soft:#1E1B38;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.55 var(--f-body);-webkit-font-smoothing:antialiased}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+[hidden]{display:none!important}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* top bar */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:10;background:var(--paper);border-bottom:1px solid var(--line)}
+.top-in{max-width:1180px;margin:0 auto;padding:10px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;color:var(--ink);text-decoration:none}
+.mark{display:inline-flex;flex-direction:column;align-items:center;line-height:.85;font-family:var(--f-display);background:linear-gradient(165deg,var(--silver-a),var(--silver-b) 72%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.mark .t{font-size:16px}
+.mark .b{font-size:21px;font-weight:600}
+.brand-name{font-family:var(--f-display);font-size:21px;font-weight:600}
+.brand-sub{font:500 11px var(--f-mono);letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.tools{margin-left:auto;display:flex;align-items:center;gap:10px;flex:1 1 260px;justify-content:flex-end;min-width:0}
+.search{display:flex;align-items:center;gap:8px;flex:1 1 200px;max-width:320px;min-width:0}
+.search input{width:100%;min-width:0;font:14px var(--f-body);color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:7px 10px}
+.qc{font:12px var(--f-mono);color:var(--muted);white-space:nowrap}
+.btn{font:500 13px var(--f-body);color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:7px 12px;cursor:pointer;white-space:nowrap}
+.btn:hover{border-color:var(--line-strong)}
+
+/* shell */
+.shell{max-width:1180px;margin:0 auto;padding-inline:20px;padding-block:30px 72px;display:grid;grid-template-columns:196px minmax(0,1fr);gap:44px}
+.rail{position:sticky;top:78px;align-self:start;max-height:calc(100vh - 100px);overflow:auto}
+.rail ol{list-style:none;margin:0;padding:0;display:grid;gap:2px}
+.rail a{display:block;padding:5px 10px;border-radius:6px;color:var(--muted);text-decoration:none;font-size:14px}
+.rail a:hover{color:var(--ink);background:var(--surface)}
+.rail a.on{color:var(--ink);background:var(--accent-soft)}
+main{min-width:0;display:grid;gap:60px}
+section{scroll-margin-top:84px;min-width:0}
+h1,h2,h3{font-family:var(--f-display);font-weight:600;text-wrap:balance;margin:0}
+h1{font-size:36px;line-height:1.12;letter-spacing:-.005em}
+h2{font-size:28px;line-height:1.2}
+h3{font-size:18px;line-height:1.3}
+p{margin:0}
+.kicker{font:500 11px var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.sec-head{display:grid;gap:6px;margin-bottom:20px}
+.sec-head p{color:var(--muted);max-width:70ch}
+.stack{display:grid;gap:18px}
+.lede{font-family:var(--f-display);font-size:19px;line-height:1.55;max-width:66ch}
+.lede em{font-style:italic}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.mono{font-family:var(--f-mono)}
+.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+
+/* lists */
+ul.pl{margin:0;padding-left:18px;display:grid;gap:7px;max-width:72ch}
+ul.pl li::marker{color:var(--line-strong)}
+ol.steps{margin:0;padding-left:20px;display:grid;gap:8px;max-width:72ch}
+ol.steps li::marker{font-family:var(--f-mono);color:var(--muted)}
+.h-row{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+
+/* cards, grids */
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+.grid-3{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;min-width:0}
+.card h3{font-size:17px;margin-bottom:6px}
+.card ul.pl{gap:5px;font-size:14px}
+.card p{font-size:14px}
+.note{border-left:3px solid var(--line-strong);padding:4px 0 4px 12px;color:var(--muted);font-size:14px;max-width:72ch}
+
+/* tiles */
+.tiles{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:grid;gap:2px;align-content:start}
+.tile .v{font:600 21px var(--f-mono);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.tile .l{font-size:12.5px;color:var(--muted);line-height:1.4}
+
+/* next actions */
+.next{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px 18px;display:grid;gap:10px}
+.next ol{margin:0;padding-left:20px;display:grid;gap:8px}
+
+/* chips */
+.chip{display:inline-flex;align-items:center;font:600 10.5px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:999px;white-space:nowrap;line-height:1.5}
+.c-dec{color:var(--ok);background:var(--ok-soft)}
+.c-prop{color:var(--prop);background:var(--prop-soft)}
+.c-park{color:var(--warn);background:var(--warn-soft)}
+.c-open{color:var(--bad);background:var(--bad-soft)}
+.legend{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+
+/* figures */
+figure{margin:0;display:grid;gap:10px}
+figcaption{font-size:13.5px;color:var(--muted);max-width:72ch}
+.fig{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px}
+.fig svg{display:block;width:100%;height:auto}
+.fig.map svg{min-width:880px}
+.fig.loop svg{min-width:520px;max-width:680px;margin:0 auto}
+.d-box{fill:var(--surface);stroke:var(--line-strong);stroke-width:1.2}
+.d-key{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.4}
+.d-title{font-family:var(--f-body);font-size:14px;font-weight:600;fill:var(--ink)}
+.d-big{font-family:var(--f-display);font-size:18px}
+.d-sub{font-family:var(--f-body);font-size:12px;fill:var(--muted)}
+.d-ink{fill:var(--ink)}
+.d-lab{font-family:var(--f-mono);font-size:11px;fill:var(--muted)}
+.d-head{font-family:var(--f-mono);font-size:11px;font-weight:600;letter-spacing:.09em;fill:var(--muted)}
+.d-edge{stroke:var(--line-strong);stroke-width:1.4;fill:none}
+.d-rule{stroke:var(--line);stroke-width:1}
+.d-money{stroke:var(--accent);stroke-width:1.6;fill:none;stroke-dasharray:6 4}
+.d-money-lab{font-family:var(--f-body);font-size:13px;font-weight:600;fill:var(--accent)}
+.d-ah{fill:var(--line-strong)}
+.d-ahm{fill:var(--accent)}
+svg a:hover .d-box{stroke:var(--accent)}
+svg a:focus-visible{outline:none}
+svg a:focus-visible .d-box,svg a:focus-visible .d-key{stroke:var(--accent);stroke-width:2.5}
+
+/* lifecycle strip */
+.life{display:grid;grid-template-columns:3fr 9fr 12fr;gap:4px;max-width:760px}
+.life div{min-width:0}
+.life .bar{height:10px;border-radius:3px}
+.life .b1{background:var(--prop)}
+.life .b2{background:var(--accent)}
+.life .b3{background:var(--line-strong)}
+.life .t{font-size:13px;font-weight:600;margin-top:6px}
+.life .m{font:12px var(--f-mono);color:var(--muted)}
+
+/* split bar */
+.split{display:flex;height:34px;border-radius:7px;overflow:hidden;max-width:760px;font:600 12.5px var(--f-body)}
+.split span{display:flex;align-items:center;padding:0 10px;color:var(--paper);white-space:nowrap;overflow:hidden}
+.s-lab{background:var(--accent);flex:50}
+.s-uni{background:var(--muted);flex:20}
+.s-tol{background:var(--ink);flex:30}
+
+/* tables */
+.tbl{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:10px}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{padding:8px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+tr:last-child td{border-bottom:0}
+th{font:600 11px var(--f-mono);letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+td.n,th.n{text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+
+/* timeline */
+.tl{list-style:none;margin:0;padding:0;display:grid;gap:0;max-width:760px}
+.tl li{display:grid;grid-template-columns:22px minmax(0,1fr);gap:12px;padding-bottom:16px;position:relative}
+.tl li::before{content:"";position:absolute;left:10px;top:16px;bottom:0;width:1px;background:var(--line)}
+.tl li:last-child::before{display:none}
+.tl .dot{width:21px;height:21px;border-radius:50%;border:1px solid var(--line-strong);background:var(--surface);font:600 10.5px var(--f-mono);display:grid;place-items:center;color:var(--muted);position:relative;z-index:1}
+.tl .dot.now{border-color:var(--bad);color:var(--bad)}
+.tl b{font-weight:600}
+
+/* decisions */
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.filters button{font:500 13px var(--f-body);color:var(--muted);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:5px 12px;cursor:pointer}
+.filters button[aria-pressed="true"]{color:var(--ink);border-color:var(--ink)}
+ul.dl{list-style:none;margin:0;padding:0;display:grid;gap:0;background:var(--surface);border:1px solid var(--line);border-radius:10px;max-width:880px}
+ul.dl li{display:grid;grid-template-columns:92px minmax(0,1fr);gap:12px;padding:10px 14px;border-bottom:1px solid var(--line);align-items:baseline}
+ul.dl li:last-child{border-bottom:0}
+ul.dl .is-off,ul.dl li.is-off{display:none}
+ul.dl .area{font:500 11px var(--f-mono);color:var(--muted);letter-spacing:.04em;margin-right:6px;text-transform:uppercase}
+
+details{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 14px;max-width:880px}
+details summary{cursor:pointer;font-weight:600}
+details[open] summary{margin-bottom:8px}
+
+footer{max-width:1180px;margin:0 auto;padding-inline:20px;padding-block:0 40px;color:var(--muted);font-size:13px;display:flex;gap:16px;flex-wrap:wrap;justify-content:space-between}
+footer .formula{font-family:var(--f-display);font-size:16px;color:var(--ink)}
+
+@media (max-width: 900px){
+  .shell{grid-template-columns:minmax(0,1fr);gap:22px;padding-block:18px 56px}
+  .rail{position:static;max-height:none;overflow-x:auto;padding-bottom:4px}
+  .rail ol{display:flex;gap:6px;white-space:nowrap}
+  .rail a{border:1px solid var(--line);background:var(--surface)}
+  h1{font-size:30px}
+  .lede{font-size:17.5px}
+  ul.dl li{grid-template-columns:minmax(0,1fr);gap:4px}
+}
+
+/* view tabs */
+.tabs{display:inline-flex;gap:2px;padding:3px;background:var(--surface);border:1px solid var(--line);border-radius:10px}
+.tabs button{font:500 13px var(--f-body);color:var(--muted);background:transparent;border:0;border-radius:7px;padding:6px 12px;cursor:pointer;white-space:nowrap}
+.tabs button:hover{color:var(--ink)}
+.tabs button[aria-selected="true"]{background:var(--ink);color:var(--paper)}
+
+/* mind map: an infinite dotted canvas, camera = translate + scale on one world layer */
+.mapview{position:relative;height:calc(100vh - var(--top-h,64px));height:calc(100dvh - var(--top-h,64px));overflow:hidden;background-color:var(--paper);background-image:radial-gradient(circle,var(--dot) 1.1px,transparent 1.5px);background-size:24px 24px;touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}
+.mapview.grabbing{cursor:grabbing}
+#mm-world{position:absolute;left:0;top:0;transform-origin:0 0}
+#mm-edges{position:absolute;overflow:visible;pointer-events:none}
+.mm-e{fill:none;stroke:var(--line-strong);stroke-width:1.5}
+.mm-e.d1{stroke-width:2.2}
+.mm-e.on{stroke:var(--accent);stroke-width:2.6}
+.mm-node{position:absolute;left:0;top:0;width:max-content;max-width:250px;background:var(--surface);border:1px solid var(--line-strong);border-radius:10px;padding:9px 12px;cursor:pointer;color:var(--ink)}
+.mm-node:hover{border-color:var(--accent)}
+.mm-node:focus-visible,.mm-node.sel{outline:2px solid var(--accent);outline-offset:3px}
+.mm-h{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}
+.mm-t{font:600 14px/1.25 var(--f-body)}
+.mm-s{font:12.5px/1.35 var(--f-body);color:var(--muted);margin-top:3px}
+.mm-node .chip{font-size:9.5px;padding:1px 6px}
+.mm-node.d0{max-width:330px;padding:14px 22px;text-align:center;border:2px solid var(--accent)}
+.mm-node.d0 .mm-h{justify-content:center}
+.mm-node.d0 .mm-t{font:600 30px/1.1 var(--f-display)}
+.mm-node.d0 .mm-s{font-size:13.5px}
+.mm-mark{display:inline-flex;margin-bottom:4px}
+.mm-node.d1{max-width:230px;background:var(--ink);border-color:var(--ink);color:var(--paper);padding:11px 14px}
+.mm-node.d1 .mm-t{font:600 18px/1.2 var(--f-display)}
+.mm-node.d1 .mm-s{color:var(--ink-sub)}
+.mm-node.d1:hover{border-color:var(--accent)}
+.mm-node.d3{max-width:230px;border-color:var(--line)}
+.mm-node.d3 .mm-t{font-size:13.5px}
+.mm-count{position:absolute;top:50%;font:600 11px var(--f-mono);color:var(--muted);background:var(--surface);border:1px solid var(--line-strong);border-radius:999px;padding:1px 7px;white-space:nowrap;line-height:1.5}
+.side-r .mm-count{left:100%;transform:translate(8px,-50%)}
+.side-l .mm-count{right:100%;transform:translate(-8px,-50%)}
+.mm-node.hit{box-shadow:0 0 0 3px var(--warn)}
+.mm-node.dim{opacity:.28}
+.mm-ui{position:absolute;z-index:5;cursor:auto}
+.mm-tools{left:12px;bottom:12px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;max-width:calc(100% - 24px);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:5px}
+.mm-btn{min-width:32px;height:32px;padding:0 10px;font:500 13px var(--f-body);color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:7px;cursor:pointer}
+.mm-btn:hover{border-color:var(--line-strong)}
+.mm-zoom{font:12px var(--f-mono);color:var(--muted);min-width:46px;text-align:center;font-variant-numeric:tabular-nums}
+.mm-hint{right:12px;bottom:12px;font-size:12px;color:var(--muted);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:6px 10px;max-width:calc(100% - 24px)}
+.mm-panel{top:12px;right:12px;bottom:12px;width:min(380px,calc(100% - 24px));background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 32px rgba(10,20,35,.16);padding:16px 18px 18px;overflow:auto;user-select:text;-webkit-user-select:text}
+.pp-close{position:absolute;top:10px;right:10px;font-size:18px;line-height:1}
+.pp-crumbs{display:flex;flex-wrap:wrap;align-items:center;gap:4px;font-size:12px;color:var(--muted);margin:0 40px 8px 0}
+.pp-crumbs button{background:none;border:0;padding:0;color:var(--accent);font:inherit;cursor:pointer}
+.pp-head{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-right:36px}
+.pp-head h3{font-size:22px}
+.pp-sub{color:var(--muted);margin-top:4px;font-size:14px}
+.pp-body{margin-top:12px;display:grid;gap:8px;font-size:14.5px;line-height:1.55}
+.pp-body ul{margin:0;padding-left:18px;display:grid;gap:6px}
+.pp-kids{margin-top:16px;display:grid;gap:6px}
+.pp-kids button{display:grid;gap:2px;text-align:left;font:inherit;font-size:14px;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:8px 10px;cursor:pointer}
+.pp-kids button:hover{border-color:var(--accent)}
+.pp-kids button span{font-size:12.5px;color:var(--muted)}
+.pp-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+@media (max-width:700px){
+  .mm-panel{top:auto;left:8px;right:8px;bottom:8px;width:auto;max-height:58%}
+  .mm-tools{top:10px;bottom:auto;left:10px}
+  .mm-hint{display:none}
+  .tabs button{padding:6px 10px}
+}
+
+/* mind map v2: everything shown, arrows, highlight threads */
+.mapview{--lens-h:48px}
+.mm-lens{left:0;right:0;top:0;height:var(--lens-h);display:flex;align-items:center;gap:8px;padding:0 12px;background:var(--surface);border-bottom:1px solid var(--line);overflow-x:auto;overflow-y:hidden;white-space:nowrap}
+.mm-lens-label{font:600 11px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);flex:none}
+.mm-lens-group{display:flex;gap:6px;flex:none}
+.mm-lens-sep{width:1px;height:20px;background:var(--line);flex:none}
+.mm-lchip{flex:none;font:500 12.5px var(--f-body);color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:4px 11px;cursor:pointer;white-space:nowrap}
+.mm-lchip:hover{border-color:var(--line-strong)}
+.mm-lchip[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.mm-lchip.st-dec[aria-pressed="true"]{background:var(--ok);border-color:var(--ok)}
+.mm-lchip.st-prop[aria-pressed="true"]{background:var(--prop);border-color:var(--prop)}
+.mm-lchip.st-park[aria-pressed="true"]{background:var(--warn);border-color:var(--warn)}
+.mm-lchip.st-open[aria-pressed="true"]{background:var(--bad);border-color:var(--bad)}
+.mm-lchip:disabled{opacity:.45;cursor:default}
+.mm-lens-count{font:12px var(--f-mono);color:var(--muted);flex:none;padding-left:4px}
+.mm-panel{top:calc(var(--lens-h) + 12px)}
+.pp-threads{margin-top:16px;display:grid;gap:6px}
+.pp-chips{display:flex;gap:6px;flex-wrap:wrap}
+.mm-ah{fill:var(--line-strong)}
+.mm-ah-on{fill:var(--accent)}
+.mm-e.lit{stroke:var(--accent);stroke-width:2.4}
+.mm-e.off{opacity:.08}
+.mapview.hide-rest .mm-e.off,.mapview.hide-rest .mm-node.lens-off{visibility:hidden}
+.mm-node{transition:opacity .2s ease}
+.mm-node.lens-off{opacity:.12}
+.mm-node.lens-path{opacity:.5}
+.mm-node.lens-on{box-shadow:0 0 0 2px var(--accent)}
+.mm-logo{display:block;width:58px;height:auto;margin:0 auto 6px;pointer-events:none}
+.mm-node.d0{max-width:340px}
+.mm-node.d0 .mm-t{font-size:34px}
+.mm-node.d1{max-width:250px}
+.mm-node.d1 .mm-t{font-size:22px}
+.brand-logo{display:block;width:30px;height:auto}
+@media (prefers-reduced-motion: reduce){.mm-node{transition:none}}
+@media (max-width:700px){
+  .mm-panel{top:auto}
+  .mm-tools{top:calc(var(--lens-h) + 8px)}
+}
+
+/* concept map v4: grey cards grouped in topic panels, straight labelled links between neighbours */
+.mapview{--edge:#7F8790;--link:#56606C;--band:#E4E8ED;--band-line:#CBD2DA;--lab:#46505E}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .mapview{--edge:#7D8794;--link:#C9D0D8;--band:#142031;--band-line:#263750;--lab:#B7C0CB} }
+:root[data-theme="dark"] .mapview{--edge:#7D8794;--link:#C9D0D8;--band:#142031;--band-line:#263750;--lab:#B7C0CB}
+.mm-band{position:absolute;left:0;top:0;background:var(--band);border:1px solid var(--band-line);border-radius:18px;pointer-events:none;transition:opacity .2s ease}
+.mm-band.off{opacity:.15}
+.mapview.hide-rest .mm-band.off{visibility:hidden}
+.mm-node{display:flex;align-items:center;justify-content:center;text-align:center;max-width:none;padding:8px 12px;border-radius:10px;background:#C4C8CD;border:1.5px solid #9A9998;color:#101B28}
+.mm-node.d0,.mm-node.d1{max-width:none}
+.mm-in{width:100%;display:flex;flex-direction:column;align-items:center}
+.mm-node .mm-h{justify-content:center;align-items:center;gap:4px 6px}
+.mm-node .mm-t{font:600 14px/18px var(--f-body)}
+.mm-node .mm-s{font:400 12.5px/16px var(--f-body);color:#34404D;margin-top:2px}
+.mm-node .chip{font:600 9.5px/14px var(--f-mono);letter-spacing:.05em;padding:1px 5px;border-radius:4px}
+.mm-node .c-dec{background:#1F4D36;color:#CFEBDC}
+.mm-node .c-prop{background:#2E2F6B;color:#DCDDFB}
+.mm-node .c-park{background:#5C4512;color:#F4E2B8}
+.mm-node .c-open{background:#6B2420;color:#F7D4CF}
+.mm-node.d1{padding:10px 18px;border-radius:12px;background:#A3A8AE;border:2px solid #7B8086;color:#0E1B2C}
+.mm-node.d1 .mm-t{font:600 21px/26px var(--f-display)}
+.mm-node.d1 .mm-s{font-size:13px;line-height:17px;color:#1F2934}
+.mm-node.d3{background:#D3D6DA;border:1px solid #A9ACAF}
+.mm-node.d0{padding:20px 28px 18px;border-radius:16px;background:#142033;border:3px solid #9A9998;color:#EEF1F5}
+.mm-lock{display:flex;align-items:center;gap:14px}
+.mm-node.d0 .mm-logo{width:61px;height:64px;margin:0;flex:none}
+.mm-node.d0 .mm-t{font:600 85px/.8 var(--f-display);position:relative;top:.13em}
+.mm-node.d0 .mm-s{font-size:14px;line-height:19px;color:#C3CDDA;margin-top:12px}
+.mm-node:hover,.mm-node.d0:hover,.mm-node.d1:hover{border-color:var(--accent)}
+.mm-node.sel,.mm-node:focus-visible,.mm-node.lens-on{outline:none;box-shadow:0 0 0 3px var(--accent)}
+.mm-e{stroke:var(--edge);stroke-width:2}
+.mm-ah{fill:var(--edge)}
+.mm-link{stroke:var(--link);stroke-width:3}
+.mm-ahL{fill:var(--link)}
+.mm-ahL-on{fill:var(--accent)}
+.mm-e.lit,.mm-link.lit{stroke:var(--accent)}
+.mm-link-lab{font:italic 400 15px var(--f-display);fill:var(--lab);paint-order:stroke;stroke:var(--paper);stroke-width:4px;stroke-linejoin:round}
+.mm-link-lab.off{opacity:.1}
+.mapview.hide-rest .mm-link-lab.off{visibility:hidden}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-in">
+    <a class="brand" href="#overview" aria-label="Tollens plan, back to top">
+      <img class="brand-logo" src="data:image/png;base64,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" alt="" width="30" height="32">
+      <span>
+        <span class="brand-name">Tollens</span><br>
+        <span class="brand-sub">The plan · Oct 12, 2026</span>
+      </span>
+    </a>
+    <div class="tabs" role="tablist" aria-label="View">
+      <button type="button" role="tab" id="tab-plan" aria-selected="true" aria-controls="view-plan">Plan</button>
+      <button type="button" role="tab" id="tab-map" aria-selected="false" aria-controls="view-map">Mind map</button>
+    </div>
+    <div class="tools">
+      <div class="search">
+        <label class="vh" for="q">Search the plan</label>
+        <input id="q" type="search" placeholder="Search the plan" autocomplete="off">
+        <span class="qc" id="q-count" aria-live="polite"></span>
+      </div>
+      <button class="btn" id="theme-btn" type="button">Dark mode</button>
+    </div>
+  </div>
+</header>
+
+<div id="view-plan">
+<div class="shell">
+  <nav class="rail" aria-label="Sections">
+    <ol>
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#map">How it works</a></li>
+      <li><a href="#record">The record</a></li>
+      <li><a href="#parties">Who says yes</a></li>
+      <li><a href="#money">Money</a></li>
+      <li><a href="#berkeley">Berkeley agreement</a></li>
+      <li><a href="#proof">Proof</a></li>
+      <li><a href="#path">Path and raise</a></li>
+      <li><a href="#vision">Vision</a></li>
+      <li><a href="#governance">Governance</a></li>
+      <li><a href="#positioning">Positioning</a></li>
+      <li><a href="#decisions">Decisions</a></li>
+      <li><a href="#tyler">Tyler update</a></li>
+    </ol>
+  </nav>
+
+  <main>
+
+    <!-- OVERVIEW -->
+    <section id="overview" data-sec>
+      <div class="stack">
+        <div class="sec-head">
+          <span class="kicker">Overview</span>
+          <h1>Pay science to keep the record of how it is actually done.</h1>
+        </div>
+        <p class="lede" data-item>Science keeps almost no record of how it's actually done. Null results and failed experiments stay in notebooks. A published paper squeezes months of work into five pages, and its line of reasoning is written after the results are in. Tollens pays researchers for half-hour sittings: an AI reads their raw files, asks only what it can't infer, and produces a record of what was really tried, in what order, and why. AI labs license those records, first as evals their models have never seen and then as training data. After 12 months every record goes public under the researcher's name. Vannevar Bush's <em>Science: The Endless Frontier</em> birthed a system that pays for discoveries and publishes the ones that worked. Tollens pays to capture the real story.</p>
+
+        <div class="next" data-item>
+          <div class="h-row"><h3>Next actions</h3><span class="chip c-open">Now</span></div>
+          <ol>
+            <li><b>Close the separation agreement.</b> It is what's stalling everything. Have the lawyer sign it, incorporate and issue Harrison's shares in one sitting.</li>
+            <li><b>Send NDAs to Isomorphic, Periodic, Lila and Edison.</b> Every buyer needs incorporation and an NDA before pilot or LOI talks continue.</li>
+            <li><b>Decide on the MATS Incubation track.</b> Applications close October 31.</li>
+          </ol>
+        </div>
+
+        <div class="legend small"><span class="muted">Status tags:</span>
+          <span class="chip c-dec">Decided</span><span class="chip c-prop">Proposed</span><span class="chip c-park">Parked</span><span class="chip c-open">Open</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- MAP -->
+    <section id="map" data-sec>
+      <div class="sec-head">
+        <span class="kicker">How it works</span>
+        <h2>One record, three ways in, three stops on the way out</h2>
+      </div>
+      <figure data-item>
+        <div class="fig map">
+          <svg viewBox="0 0 1120 520" role="img" aria-label="Records come from backlog sittings, the private lab record and the publication-fee swap. Each record is the real story of an experiment with raw files attached. Unpublished results become evals, then training data, then public at month 12; published results go straight to training. AI labs pay, the researcher's advance is repaid first, then the rest is split between contributors and Tollens, with the split set by the master agreement. bioRxiv, journals and fraud investigators get free provenance checks and give citability back to researchers.">
+            <defs>
+              <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="d-ah" d="M0 0 L10 5 L0 10 z"/></marker>
+              <marker id="ahm" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="d-ahm" d="M0 0 L10 5 L0 10 z"/></marker>
+            </defs>
+
+            <text class="d-head" x="120" y="88" text-anchor="middle">SOURCES</text>
+            <text class="d-head" x="410" y="88" text-anchor="middle">THE RECORD</text>
+            <text class="d-head" x="720" y="88" text-anchor="middle">LIFECYCLE</text>
+            <text class="d-head" x="1000" y="88" text-anchor="middle">WHO USES IT</text>
+
+            <a href="#money">
+              <path class="d-money" d="M1080 100 V48 H40 V97" marker-end="url(#ahm)"/>
+              <text class="d-money-lab" x="560" y="38" text-anchor="middle">Buyers pay · advance repaid first · then the split (model: 50 lab, 20 university, 30 Tollens, terms open)</text>
+            </a>
+
+            <a href="#record">
+              <rect class="d-box" x="20" y="100" width="200" height="64" rx="8"/>
+              <text class="d-title" x="36" y="127">Backlog sittings</text>
+              <text class="d-sub" x="36" y="147">half-hour, AI fills the gaps</text>
+            </a>
+            <a href="#record">
+              <rect class="d-box" x="20" y="196" width="200" height="64" rx="8"/>
+              <text class="d-title" x="36" y="223">Private lab record</text>
+              <text class="d-sub" x="36" y="243">logged as it happens</text>
+            </a>
+            <a href="#record">
+              <rect class="d-box" x="20" y="292" width="200" height="64" rx="8"/>
+              <text class="d-title" x="36" y="319">Publication-fee swap</text>
+              <text class="d-sub" x="36" y="339">story leading to a paper</text>
+            </a>
+
+            <path class="d-edge" d="M220 132 H297" marker-end="url(#ah)"/>
+            <text class="d-lab" x="259" y="124" text-anchor="middle">sitting</text>
+            <path class="d-edge" d="M220 228 H297" marker-end="url(#ah)"/>
+            <text class="d-lab" x="259" y="220" text-anchor="middle">commit</text>
+            <path class="d-edge" d="M220 324 H297" marker-end="url(#ah)"/>
+            <text class="d-lab" x="259" y="316" text-anchor="middle">fees paid</text>
+
+            <a href="#record">
+              <rect class="d-key" x="300" y="100" width="220" height="256" rx="10"/>
+              <text class="d-title d-big" x="316" y="131">The record</text>
+              <text class="d-sub d-ink" x="316" y="160">Real story of an experiment</text>
+              <text class="d-sub d-ink" x="316" y="182">What was tried, and why</text>
+              <text class="d-sub d-ink" x="316" y="204">Raw files attached</text>
+              <text class="d-sub d-ink" x="316" y="226">Fingerprinted at capture</text>
+              <line class="d-rule" x1="316" y1="246" x2="504" y2="246"/>
+              <text class="d-lab" x="316" y="268">LABELLED BY RECOVERY</text>
+              <text class="d-sub" x="316" y="290">registered beforehand</text>
+              <text class="d-sub" x="316" y="311">rebuilt from dated files</text>
+              <text class="d-sub" x="316" y="332">recalled from memory</text>
+            </a>
+
+            <path class="d-edge" d="M520 132 H617" marker-end="url(#ah)"/>
+            <text class="d-lab" x="569" y="124" text-anchor="middle">unpublished</text>
+            <path class="d-edge" d="M520 228 H617" marker-end="url(#ah)"/>
+            <text class="d-lab" x="569" y="220" text-anchor="middle">published</text>
+
+            <a href="#record">
+              <rect class="d-box" x="620" y="100" width="200" height="64" rx="8"/>
+              <text class="d-title" x="636" y="127">Eval</text>
+              <text class="d-sub" x="636" y="147">private, about 3 months</text>
+            </a>
+            <a href="#record">
+              <rect class="d-box" x="620" y="196" width="200" height="64" rx="8"/>
+              <text class="d-title" x="636" y="223">Training licence</text>
+              <text class="d-sub" x="636" y="243">until month 12</text>
+            </a>
+            <a href="#record">
+              <rect class="d-box" x="620" y="292" width="200" height="64" rx="8"/>
+              <text class="d-title" x="636" y="319">Public</text>
+              <text class="d-sub" x="636" y="339">CC-BY, DOI, their name</text>
+            </a>
+            <path class="d-edge" d="M720 164 V193" marker-end="url(#ah)"/>
+            <text class="d-lab" x="730" y="184">retired</text>
+            <path class="d-edge" d="M720 260 V289" marker-end="url(#ah)"/>
+            <text class="d-lab" x="730" y="280">month 12</text>
+
+            <path class="d-edge" d="M820 132 H897" marker-end="url(#ah)"/>
+            <text class="d-lab" x="859" y="124" text-anchor="middle">evals</text>
+            <path class="d-edge" d="M820 228 H897" marker-end="url(#ah)"/>
+            <text class="d-lab" x="859" y="220" text-anchor="middle">training</text>
+            <path class="d-edge" d="M820 324 H897" marker-end="url(#ah)"/>
+            <text class="d-lab" x="859" y="316" text-anchor="middle">open</text>
+
+            <a href="#parties">
+              <rect class="d-box" x="900" y="100" width="200" height="160" rx="8"/>
+              <text class="d-title" x="916" y="127">AI labs</text>
+              <text class="d-sub" x="916" y="149">frontier · AI-science</text>
+              <text class="d-sub" x="916" y="169">pharma · applied</text>
+              <text class="d-sub" x="916" y="199">every buyer licenses</text>
+              <text class="d-sub" x="916" y="219">the same corpus</text>
+            </a>
+            <a href="#parties">
+              <rect class="d-box" x="900" y="292" width="200" height="64" rx="8"/>
+              <text class="d-title" x="916" y="319">Everyone</text>
+              <text class="d-sub" x="916" y="339">free and citable</text>
+            </a>
+
+            <path class="d-edge" d="M410 356 V429" marker-end="url(#ah)"/>
+            <text class="d-lab" x="420" y="398">provenance</text>
+            <a href="#parties">
+              <rect class="d-box" x="300" y="432" width="520" height="64" rx="8"/>
+              <text class="d-title" x="316" y="459">bioRxiv · journals · fraud investigators</text>
+              <text class="d-sub" x="316" y="479">Free provenance checks, paid hosting. They give citability and a channel.</text>
+            </a>
+            <path class="d-edge" d="M300 464 H120 V359" marker-end="url(#ah)"/>
+            <text class="d-lab" x="210" y="456" text-anchor="middle">citability, channel</text>
+          </svg>
+        </div>
+        <figcaption>How a record moves from a lab to evals, training data and the public, and how money and credit flow back. Click any box to jump to its section.</figcaption>
+      </figure>
+    </section>
+
+    <!-- RECORD -->
+    <section id="record" data-sec>
+      <div class="sec-head">
+        <span class="kicker">The record</span>
+        <h2>One thing, three sources, one rule</h2>
+        <p>Every record is the same thing: the real story of an experiment, with its raw files. What changes is where it comes from and whether its result is already public.</p>
+      </div>
+      <div class="stack">
+        <div class="grid-3">
+          <div class="card" data-item>
+            <h3>Backlog sittings</h3>
+            <p>A half-hour sitting. The AI reads the files a researcher already has and asks only what it can't infer. About three records per sitting. Stage 1 supply.</p>
+          </div>
+          <div class="card" data-item>
+            <h3>Private lab record</h3>
+            <p>The lab logs attempts and mistakes as they happen, inside the lab and its own network first, with scoop protection. A record leaves only when the lab commits it and sets its own release date. Stage 2 supply.</p>
+          </div>
+          <div class="card" data-item>
+            <h3>Publication-fee swap</h3>
+            <p>Tollens pays a paper's publication fees in exchange for the full trajectory leading to it: the data, dead ends and reasoning the five pages leave out.</p>
+          </div>
+        </div>
+
+        <div class="card" data-item>
+          <div class="h-row"><h3>The one rule</h3><span class="chip c-park">Parked: paper path</span></div>
+          <p>An unpublished result serves as an eval first, because no model has seen it. A published result goes straight to training, since its answer is already online (my call; parked for you). Everything goes public at 12 months.</p>
+        </div>
+
+        <div data-item>
+          <div class="h-row"><h3>Lifecycle, in months</h3></div>
+          <div class="life" role="img" aria-label="Months 0 to 3 eval, months 3 to 12 training licence, month 12 onward public, with an optional hold to month 24">
+            <div><div class="bar b1"></div><div class="t">Eval</div><div class="m">0–3</div></div>
+            <div><div class="bar b2"></div><div class="t">Training licence</div><div class="m">3–12</div></div>
+            <div><div class="bar b3"></div><div class="t">Public: CC-BY, DOI, researcher's name</div><div class="m">12 on · hold to 24 max</div></div>
+          </div>
+          <p class="small muted" style="margin-top:8px;max-width:72ch">A researcher can hold a record one extra year for scoop protection. A held record earns nothing, and the forfeited share goes to the other contributors. Subscribers keep what they ingested during their term.</p>
+        </div>
+
+        <div class="grid">
+          <div class="card" data-item>
+            <h3>Provenance labels</h3>
+            <ul class="pl">
+              <li><b>Registered beforehand.</b> Reasoning written before the outcome, proven by the timestamp. Highest value.</li>
+              <li><b>Rebuilt from dated files.</b> The AI drafts from protocols and notebook entries before it sees the outcome.</li>
+              <li><b>Recalled from memory.</b> Training only.</li>
+            </ul>
+          </div>
+          <div class="card" data-item>
+            <div class="h-row"><h3>Hindsight rule</h3><span class="chip c-prop">Proposed</span></div>
+            <p>The AI drafts each record from dated files before it sees the outcome. The researcher corrects facts but can't rewrite the story. Papers do the opposite: their reasoning is written after the results.</p>
+          </div>
+        </div>
+
+        <div class="card" data-item>
+          <div class="h-row"><h3>Private lab record: how it works</h3><span class="chip c-prop">Proposed</span></div>
+          <ul class="pl">
+            <li>Each entry is fingerprinted and timestamped when written. That proves later it wasn't edited, without revealing what it says.</li>
+            <li>Tollens pays the sitting fee when the lab commits a record with a release date. Nothing is paid for entries that never leave the lab.</li>
+            <li>A committed record can serve as a private eval while sealed. The answer key never leaves Tollens; AI labs must agree not to keep eval prompts.</li>
+            <li>Keep it a small attempts log. Benchling owns the full lab notebook.</li>
+          </ul>
+        </div>
+
+        <div class="card" data-item>
+          <div class="h-row"><h3>Evals and the stump count</h3><span class="chip c-dec">Decided</span></div>
+          <ul class="pl">
+            <li>A public leaderboard with about 5% of items open as samples. Live evals stay private and run through an API on subscription.</li>
+            <li>An item retires on saturation, a serve-count limit or a maximum age, then becomes training data.</li>
+            <li>Each record shows a running count of frontier-model runs it stumped, for example <span class="mono">stumped 41 of 46 runs across 9 models</span>, without naming which model failed. The final count is printed on the public record.</li>
+            <li>The rubric and expert follow-up questions stay private when a record goes public.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- PARTIES -->
+    <section id="parties" data-sec>
+      <div class="sec-head">
+        <span class="kicker">Who says yes</span>
+        <h2>Each party gets something it can't get elsewhere</h2>
+      </div>
+      <div class="grid">
+        <div class="card" data-item>
+          <h3>Researcher</h3>
+          <ul class="pl">
+            <li>About $96 an hour, no write-up</li>
+            <li>A DOI under their own name</li>
+            <li>A public stump count</li>
+            <li>Later: a citation each time an AI agent uses the record</li>
+          </ul>
+        </div>
+        <div class="card" data-item>
+          <h3>PI and lab</h3>
+          <ul class="pl">
+            <li>One signature for the whole lab</li>
+            <li>Royalties the PI controls</li>
+            <li>Publication fees covered</li>
+            <li>A free private integrity check before submitting a paper</li>
+            <li>The lab's own searchable memory</li>
+          </ul>
+        </div>
+        <div class="card" data-item>
+          <h3>University</h3>
+          <ul class="pl">
+            <li>20 royalty points on data that earns it nothing today. It was never going to be licensed or commercialized.</li>
+            <li>A structure its lawyers know from HHMI</li>
+            <li>The data stays the university's. Tollens owns only its structured record.</li>
+          </ul>
+        </div>
+        <div class="card" data-item>
+          <h3>bioRxiv, journals, fraud investigators</h3>
+          <ul class="pl">
+            <li>Raw files, the evidence fraud detection needs. Provenance checks are free; bioRxiv is never charged.</li>
+            <li>Tollens pays bioRxiv to host the public records: AI money paying for the commons it uses. Needs a new article type, so ask through an openRxiv Labs pilot. <span class="chip c-prop">Proposed</span></li>
+            <li>Later: bring bioRxiv's comment sections to life around the records.</li>
+            <li>Sholto David would use the records the way he uses PubPeer.</li>
+            <li>In return: citability, a channel to researchers, legitimacy.</li>
+          </ul>
+        </div>
+        <div class="card" data-item>
+          <h3>AI labs</h3>
+          <ul class="pl">
+            <li>Evals that refill themselves, because researchers keep failing</li>
+            <li>The real reasoning leading to discoveries</li>
+            <li>A breadth no automated lab can match</li>
+            <li>Non-exclusive licences. Buyers keep permanent use of what they ingested during their term, never ownership or resale rights. Live eval items are never handed over, only scores.</li>
+            <li>They can post requests that pay researchers extra for matching records.</li>
+          </ul>
+        </div>
+        <div class="card" data-item>
+          <div class="h-row"><h3>Biosecurity</h3><span class="chip c-prop">Thinking</span></div>
+          <ul class="pl">
+            <li>Where recording everything is the norm, hiding work is costly: gaps stand out, and investigators get a timestamped trail.</li>
+            <li>A determined bad actor simply won't record. Claim "harder to hide," never "impossible."</li>
+            <li>The records are dual-use too. Screen anything involving dangerous pathogens or toxins before licensing, with a restricted tier.</li>
+            <li>Who cares: AI-lab safety teams wanting a screened supplier and restricted evals of dangerous capability, biosecurity funders, MATS.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- MONEY -->
+    <section id="money" data-sec>
+      <div class="sec-head">
+        <span class="kicker">Money</span>
+        <h2>Buyers pay, the advance comes back first, then contributors get their share</h2>
+        <p>Numbers come from final_model_oct.py: $50 sittings, solo founder, a $2.5M seed.</p>
+      </div>
+      <div class="stack">
+        <div data-item>
+          <div class="h-row"><h3>Every dollar after the advance is repaid, as modelled</h3><span class="chip c-park">Parked</span></div>
+          <div class="split" role="img" aria-label="50 percent to the lab, 20 percent to the university, 30 percent to Tollens">
+            <span class="s-lab">50 lab</span><span class="s-uni">20 university</span><span class="s-tol">30 Tollens</span>
+          </div>
+        </div>
+
+        <div class="card" data-item>
+          <div class="h-row"><h3>Payout rules</h3></div>
+          <ul class="pl">
+            <li><span class="chip c-park">Parked</span> The contributor share. The model uses 70% (50 lab, 20 university), but the split waits on the master agreement terms.</li>
+            <li><span class="chip c-dec">Decided</span> <b>Logger rule.</b> Records of work up to January 2028 earn the full contributor share. After that, a record made without the Tollens logger loses 20% of its quality score, and so 20% of its royalties. Each lab's clock starts at January 2028 or when it gets the logger, whichever is later, and goes by the date the experiment started. Setups where the logger can't run are exempt. This 20% is the only hindsight penalty, so the provenance label doesn't cut pay a second time. Replaces the 70%/50% rule (Oct 12).</li>
+            <li><span class="chip c-prop">Proposed</span> A 20% sitting-fee IOU, paid on release, for entries whose fingerprint predates the outcome. The fingerprint is the IOU.</li>
+            <li>Researchers: $50 per 30-minute sitting plus $15 per 15-minute extension (two at most). About $96 an hour, against a loaded $23 for a grad student and $45 for a postdoc.</li>
+            <li>Academic use is free. Every buyer licenses the same corpus.</li>
+          </ul>
+        </div>
+
+        <div class="tbl" data-item>
+          <table>
+            <thead><tr><th>Two years from seed close</th><th class="n">Year 1</th><th class="n">Year 2</th></tr></thead>
+            <tbody>
+              <tr><td>Universities signed (of 24 approached)</td><td class="n">6</td><td class="n">12</td></tr>
+              <tr><td>Labs active at year end</td><td class="n">50</td><td class="n">172</td></tr>
+              <tr><td>Paid sittings</td><td class="n">299</td><td class="n">1,088</td></tr>
+              <tr><td>Records bought (plus ~1,580 from the EV pilot)</td><td class="n">911</td><td class="n">3,428</td></tr>
+              <tr><td>Advance / all-in acquisition cost per record</td><td class="n">$17 / $337</td><td class="n">$17 / $112</td></tr>
+              <tr><td>Paying buyers</td><td class="n">1</td><td class="n">3</td></tr>
+              <tr><td>Bookings</td><td class="n">$250,000</td><td class="n">$775,000</td></tr>
+              <tr><td>Paid to researchers</td><td class="n">$166,000</td><td class="n">$568,000</td></tr>
+              <tr><td>Tollens gross profit (margin)</td><td class="n">$53,000 (21%)</td><td class="n">$197,000 (25%)</td></tr>
+              <tr><td>Headcount at year end</td><td class="n">4</td><td class="n">6</td></tr>
+              <tr><td>Net cash burn</td><td class="n">$877,000</td><td class="n">$1,208,000</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="grid">
+          <div class="card" data-item>
+            <h3>The round</h3>
+            <ul class="pl">
+              <li>Seed: $2.5M, raised on a signed pilot LOI ($2.75M at market-rate costs)</li>
+              <li>Buyer cash exceeds researcher pay by $279K over two years, so the seed pays only for the team</li>
+              <li>About $1.0M in cash at month 18, when the Series A process starts</li>
+            </ul>
+          </div>
+          <div class="card" data-item>
+            <h3>Per lab</h3>
+            <ul class="pl">
+              <li>Year 2: $3,346 ($530 sitting pay, $2,816 royalties). The university's 20 points: $1,127.</li>
+              <li>At scale: ~$48K, from 30 buyers at mid-range prices (~$29M a year) across 300 labs. ~$24K at 600 labs.</li>
+              <li>Rule: add labs only as fast as buyer revenue grows.</li>
+            </ul>
+          </div>
+          <div class="card" data-item>
+            <h3>Year 4</h3>
+            <ul class="pl">
+              <li>40 universities, ~600 labs</li>
+              <li>~14,000 records a year</li>
+              <li>15 buyers, $6–12M in bookings</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="note" data-item><b>Not in the model yet:</b> eval subscriptions (upside), publication-fee costs and what a paper-trajectory record sells for, lab gifts, and the logger rule (it touches only experiments started after January 2028).</div>
+      </div>
+    </section>
+
+    <!-- BERKELEY -->
+    <section id="berkeley" data-sec>
+      <div class="sec-head">
+        <span class="kicker">Berkeley agreement</span>
+        <h2>One master agreement fixes four problems at once</h2>
+        <p>Berkeley's IP office (Mike Cohen) supports Tollens. The master agreement is unsigned and its terms are parked for now.</p>
+      </div>
+      <div class="stack">
+        <div class="grid">
+          <div class="card" data-item>
+            <div class="h-row"><h3>Ownership</h3><span class="chip c-dec">Settled fact</span></div>
+            <p>UC's Research Data Policy (July 2022) says the Regents own research data. Records with results need the university's licence.</p>
+          </div>
+          <div class="card" data-item>
+            <div class="h-row"><h3>The university's share</h3><span class="chip c-park">Parked</span></div>
+            <p>20 royalty points. Royalties versus gifts is unsettled.</p>
+          </div>
+          <div class="card" data-item>
+            <div class="h-row"><h3>Paying researchers directly</h3><span class="chip c-prop">Proposed</span></div>
+            <p>Paying for time is legal. The data must come through the university, so write direct pay into the master agreement. Faculty report outside work yearly; postdocs need an approved exception. Visa holders: parked.</p>
+          </div>
+          <div class="card" data-item>
+            <div class="h-row"><h3>Overhead on lab money</h3><span class="chip c-park">Parked</span></div>
+            <p>Research gifts carry a 13% fee; sponsored research about 60%. A gift tied to submissions counts as sponsored. Options: a flat gift per signed lab, or a fund that pays only after release.</p>
+          </div>
+        </div>
+        <div class="grid">
+          <div class="card" data-item>
+            <h3>HHMI is the precedent</h3>
+            <p>HHMI employs its investigators directly and signs one collaboration agreement per university, covering lab space, fees and IP, before its first investigator starts. It refuses overhead on its gifts. Copy the structure now; ask for the no-overhead waiver once Tollens brings real money to campus.</p>
+          </div>
+          <div class="card" data-item>
+            <div class="h-row"><h3>Avoid the Innovation Access Agreement</h3><span class="chip c-prop">Proposed</span></div>
+            <p>Berkeley's standard startup deal lets it buy up to 2% of every raise, SAFEs included, and its licence can't be passed on to AI labs. Ask for royalty points instead, and pay every university the same way so Tollens stays neutral.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PROOF -->
+    <section id="proof" data-sec>
+      <div class="sec-head">
+        <span class="kicker">Proof</span>
+        <h2>What's already happened</h2>
+      </div>
+      <div class="grid">
+        <div class="card" data-item>
+          <h3>Buyers</h3>
+          <ul class="pl">
+            <li>Isomorphic (call Sept 28): incorporation and an NDA, then a pilot LOI</li>
+            <li>Periodic: William Fedus passed you to the materials team, who want unpublished materials data</li>
+            <li>Lila, Edison, OpenAI and Anthropic interested</li>
+            <li>Every buyer waits on incorporation and an NDA</li>
+          </ul>
+        </div>
+        <div class="card" data-item>
+          <h3>Scientists</h3>
+          <ul class="pl">
+            <li>Three Nobel laureates: Doudna, Schekman and Betzig. Betzig came in skeptical.</li>
+            <li>Mike Eisen, co-founder of PLOS</li>
+            <li>Sholto David, whose analysis led to the 2024 Dana-Farber retractions</li>
+          </ul>
+        </div>
+        <div class="card" data-item>
+          <h3>bioRxiv</h3>
+          <ul class="pl">
+            <li>Schekman took Tollens to John Inglis, bioRxiv's co-founder</li>
+            <li>You answered Inglis's three objections in writing; both are interested</li>
+            <li>Working with bioRxiv on citability, through Schekman</li>
+          </ul>
+        </div>
+        <div class="card" data-item>
+          <h3>Your own research</h3>
+          <ul class="pl">
+            <li>One in five of 8,321 image-related retractions cites original data that couldn't be produced, up from ~3% before 2017 to 23% since 2020</li>
+            <li>A backtest on 3,390 retracted papers against matched controls</li>
+          </ul>
+        </div>
+        <div class="card" data-item>
+          <h3>Product</h3>
+          <ul class="pl">
+            <li>A working researcher console that drafts records from uploads, links every value to its source and flags what's missing</li>
+            <li>Handles successful experiments as well as nulls</li>
+          </ul>
+        </div>
+        <div class="card" data-item>
+          <h3>Investors met</h3>
+          <ul class="pl">
+            <li>a16z, The House Fund, NEA, Blackstone</li>
+            <li>Contrary, Coral Capital, Dorm Room Fund, Afore Capital</li>
+            <li>Free Ventures batch interview (Oct 3)</li>
+          </ul>
+        </div>
+        <div class="card" data-item>
+          <h3>Berkeley and team</h3>
+          <ul class="pl">
+            <li>IP office support since the Aug 25 call</li>
+            <li>Partnered PIs in MCB, Nutrition and Immunology</li>
+            <li>Solo founder; full-time once the pilot is funded</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- PATH -->
+    <section id="path" data-sec>
+      <div class="sec-head">
+        <span class="kicker">Path and raise</span>
+        <h2>From a $46.9K grant to 30 buyers</h2>
+      </div>
+      <div class="stack">
+        <ol class="tl" data-item>
+          <li><span class="dot now">1</span><div><b>Separation agreement and incorporation.</b> One sitting with the lawyer. This unblocks every buyer.</div></li>
+          <li><span class="dot">2</span><div><b>EV grant, $46,900.</b> About 530 paid sittings, roughly 1,500 records from 20+ Berkeley labs, plus SOC 2 Type I, counsel, insurance and outreach.</div></li>
+          <li><span class="dot">3</span><div><b>Pilot LOIs.</b> Isomorphic first, then Periodic, Lila and Edison.</div></li>
+          <li><span class="dot">4</span><div><b>Seed auction.</b> Floor of $2.5M for no more than 20% ($12.5M post-money). Run it once the first LOIs land, with competing term sheets and a deadline.</div></li>
+          <li><span class="dot">5</span><div><b>Series A</b> at about month 18.</div></li>
+          <li><span class="dot">6</span><div><b>Scale.</b> More universities, DOE's Genesis Mission, a voluntary HHMI pilot. About 30 buyers across 300 labs.</div></li>
+        </ol>
+
+        <div class="grid-3">
+          <div class="card" data-item><span class="kicker">Stage 1</span><h3>Harvest the backlog</h3><p>Sittings over what labs already have in their notebooks.</p></div>
+          <div class="card" data-item><span class="kicker">Stage 2</span><h3>Capture going forward</h3><p>The private lab record turns new work into registered records.</p></div>
+          <div class="card" data-item><span class="kicker">Stage 3</span><h3>Reality grades the models</h3><p>Models suggest experiments, researchers pick what to run, and reality grades both, in every lab. The evals run through all three stages.</p></div>
+        </div>
+
+        <figure data-item>
+          <div class="fig loop">
+            <svg viewBox="0 0 640 250" role="img" aria-label="Stage 3 loop: a model suggests experiments, the researcher picks what to run, reality returns the result, Tollens records the suggestion, the choice and the result, and the record trains the next model.">
+              <defs>
+                <marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="d-ah" d="M0 0 L10 5 L0 10 z"/></marker>
+              </defs>
+              <rect class="d-box" x="20" y="24" width="250" height="56" rx="8"/>
+              <text class="d-title" x="145" y="57" text-anchor="middle">Model suggests experiments</text>
+              <rect class="d-box" x="370" y="24" width="250" height="56" rx="8"/>
+              <text class="d-title" x="495" y="57" text-anchor="middle">Researcher picks what to run</text>
+              <rect class="d-box" x="370" y="170" width="250" height="56" rx="8"/>
+              <text class="d-title" x="495" y="203" text-anchor="middle">Reality returns the result</text>
+              <rect class="d-key" x="20" y="170" width="250" height="56" rx="8"/>
+              <text class="d-title" x="145" y="203" text-anchor="middle">Record trains the next model</text>
+              <path class="d-edge" d="M270 52 H367" marker-end="url(#ah2)"/>
+              <text class="d-lab" x="318" y="44" text-anchor="middle">suggestion</text>
+              <path class="d-edge" d="M495 80 V167" marker-end="url(#ah2)"/>
+              <text class="d-lab" x="505" y="128">measured</text>
+              <path class="d-edge" d="M370 198 H273" marker-end="url(#ah2)"/>
+              <text class="d-lab" x="321" y="190" text-anchor="middle">recorded</text>
+              <path class="d-edge" d="M145 170 V83" marker-end="url(#ah2)"/>
+              <text class="d-lab" x="155" y="128">better taste</text>
+            </svg>
+          </div>
+          <figcaption>Stage 3. Researchers keep the decision, so their own picks explore what a model would never try, and the overrides that work show where it is blind. The record keeps the suggestion, the choice and the result. Run across every lab, the loop sees millions of graded experiments, and its speed is set by how long each round takes.</figcaption>
+        </figure>
+
+        <div class="card" data-item>
+          <h3>Raise notes</h3>
+          <ul class="pl">
+            <li>The floor sits under the Q1 2026 median seed valuation ($18M pre-money in the PitchBook-NVCA figures), so it should clear.</li>
+            <li>Dilution already owed: Harrison's agreed stake. Avoid Berkeley's 2% investment right.</li>
+            <li>Non-dilutive options: NSF and DOE SBIR, counted as zero in the model.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- VISION -->
+    <section id="vision" data-sec>
+      <div class="sec-head">
+        <span class="kicker">Vision</span>
+        <h2>Fill the hole in Bush's system</h2>
+      </div>
+      <div class="grid">
+        <div class="card" data-item>
+          <h3>Bush's hole</h3>
+          <p><em>Science: The Endless Frontier</em> funded discoveries and published the ones that worked. It never paid for the record of how science is done. Tollens fills that hole.</p>
+        </div>
+        <div class="card" data-item>
+          <h3>Navier–Stokes</h3>
+          <p>AI agents just found the Navier–Stokes blow-up, still being checked by mathematicians, by extending a strategy two mathematicians had opened. Math has a mechanical checker. Lab science has only the experiment. Tollens bets that the record of what experiments returned, and the reasoning leading to it, is what models need to make leaps in lab science.</p>
+        </div>
+        <div class="card" data-item>
+          <h3>Distilling research taste</h3>
+          <p>Researchers at Anthropic, OpenAI and Edison, and the ML researchers in the Doudna lab, call this the data for distilling research taste. The end state is a pocket Einstein for every researcher, compounding at the speed labs can run experiments.</p>
+        </div>
+        <div class="card" data-item>
+          <h3>The next jump</h3>
+          <p>Each jump in intelligence so far, from cell to human, opened frontiers the level below could not imagine. The full record of how science is done is what the next jump learns from, and today nobody keeps it.</p>
+        </div>
+        <div class="card" data-item>
+          <h3>A market failure, fixed</h3>
+          <p>A null result is a public good nobody funds. AI labs' private demand finally pays for it. That is Tyler's own field.</p>
+          <p class="small muted" style="margin-top:6px"><span class="chip c-park">Parked</span> Subsidizing other near-functional markets.</p>
+        </div>
+        <div class="card" data-item>
+          <h3>Safety</h3>
+          <p>Recorded failures make bad actors harder to hide. Hypotheses registered in advance expose mismatches between what was planned and what was reported.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- GOVERNANCE -->
+    <section id="governance" data-sec>
+      <div class="sec-head">
+        <span class="kicker">Governance</span>
+        <h2>What Tollens maximizes: progress itself</h2>
+      </div>
+      <div class="grid">
+        <div class="card" data-item>
+          <div class="h-row"><h3>Advisory board</h3><span class="chip c-dec">Decided</span></div>
+          <p>Doudna, Schekman and Betzig are natural fits; Eisen on a separate track. The board advises only. Members' labs may contribute and get paid, so they step out of anything touching payouts or pricing, and you keep the vision.</p>
+        </div>
+        <div class="card" data-item>
+          <h3>Commitments live in the contracts</h3>
+          <ul class="pl">
+            <li>The contributor share, cut 20% only for avoidable hindsight</li>
+            <li>Public release by month 24 at the latest</li>
+            <li>Integrity checks free for bioRxiv and journals</li>
+          </ul>
+        </div>
+        <div class="card" data-item>
+          <h3>Keep Eisen and Schekman apart</h3>
+          <p>They fell out publicly over eLife and don't yet know about each other's support. Ask each before naming them together, and never pitch Schekman or openRxiv in eLife terms.</p>
+        </div>
+        <div class="card" data-item>
+          <h3>Keep the audiences apart</h3>
+          <p>openRxiv dislikes content flowing to AI labs. Lead with integrity and open release there; keep the AI-lab story for buyers and investors.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- POSITIONING -->
+    <section id="positioning" data-sec>
+      <div class="sec-head">
+        <span class="kicker">Positioning</span>
+        <h2>Why nobody else has this</h2>
+      </div>
+      <div class="tbl" data-item>
+        <table>
+          <thead><tr><th>Who</th><th>What they have</th><th>What Tollens has</th></tr></thead>
+          <tbody>
+            <tr><td>Qokedas</td><td>Raw files bought from individuals, who at US universities usually don't own them</td><td>A licence through the university, and the context that was never in the files</td></tr>
+            <tr><td>Mercor, Scale</td><td>Expert judgment on demand</td><td>The historical record of real experiments, which can't be produced on demand</td></tr>
+            <tr><td>Publishers</td><td>The five polished pages</td><td>The 30 pages leading to them</td></tr>
+            <tr><td>Self-driving labs (Lila, Periodic)</td><td>New data in narrow areas</td><td>A breadth no automated lab can match, which is why they also buy</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- DECISIONS -->
+    <section id="decisions" data-sec>
+      <div class="sec-head">
+        <span class="kicker">Decisions</span>
+        <h2>Everything decided, proposed, parked or open</h2>
+      </div>
+      <div class="filters" role="group" aria-label="Filter by status">
+        <button type="button" data-filter="all" aria-pressed="true">All</button>
+        <button type="button" data-filter="dec" aria-pressed="false">Decided</button>
+        <button type="button" data-filter="prop" aria-pressed="false">Proposed</button>
+        <button type="button" data-filter="park" aria-pressed="false">Parked</button>
+        <button type="button" data-filter="open" aria-pressed="false">Open</button>
+      </div>
+      <ul class="dl">
+        <li data-item data-status="open"><span class="chip c-open">Open</span><span><span class="area">Company</span>Separation agreement, then incorporation. The main staller.</span></li>
+        <li data-item data-status="open"><span class="chip c-open">Open</span><span><span class="area">Buyers</span>No buyer has paid yet. Every buyer waits on incorporation and an NDA.</span></li>
+        <li data-item data-status="open"><span class="chip c-open">Open</span><span><span class="area">Supply</span>Old experiments often lack raw files. Those records get a lower label.</span></li>
+        <li data-item data-status="open"><span class="chip c-open">Open</span><span><span class="area">Team</span>Solo founder.</span></li>
+        <li data-item data-status="open"><span class="chip c-open">Open</span><span><span class="area">Deadline</span>MATS Incubation track: apply by October 31 or not.</span></li>
+        <li data-item data-status="dec"><span class="chip c-dec">Decided</span><span><span class="area">Royalties</span>Logger rule: full share for work up to January 2028, then 20% off records made without the logger.</span></li>
+        <li data-item data-status="dec"><span class="chip c-dec">Decided</span><span><span class="area">Supply</span>Publication-fee swap for the full story leading to a paper.</span></li>
+        <li data-item data-status="dec"><span class="chip c-dec">Decided</span><span><span class="area">Credit</span>Stump count counts runs, without naming the model.</span></li>
+        <li data-item data-status="dec"><span class="chip c-dec">Decided</span><span><span class="area">Integrity</span>bioRxiv and journals are never charged.</span></li>
+        <li data-item data-status="dec"><span class="chip c-dec">Decided</span><span><span class="area">Board</span>Advisory only.</span></li>
+        <li data-item data-status="dec"><span class="chip c-dec">Decided</span><span><span class="area">Raise</span>Auction-style seed, floor of $2.5M for no more than 20%.</span></li>
+        <li data-item data-status="dec"><span class="chip c-dec">Decided</span><span><span class="area">Mission</span>Maximize progress itself.</span></li>
+        <li data-item data-status="prop"><span class="chip c-prop">Proposed</span><span><span class="area">Royalties</span>20% sitting-fee IOU paid on release; the fingerprint is the IOU.</span></li>
+        <li data-item data-status="prop"><span class="chip c-prop">Proposed</span><span><span class="area">Private record</span>Pay when the lab commits a record; sealed records serve as private evals.</span></li>
+        <li data-item data-status="prop"><span class="chip c-prop">Proposed</span><span><span class="area">Records</span>Hindsight rule: draft from dated files before the AI sees the outcome.</span></li>
+        <li data-item data-status="prop"><span class="chip c-prop">Proposed</span><span><span class="area">Berkeley</span>Direct pay for researchers' time written into the master agreement.</span></li>
+        <li data-item data-status="prop"><span class="chip c-prop">Proposed</span><span><span class="area">Berkeley</span>Royalty points for every university instead of the 2% investment right.</span></li>
+        <li data-item data-status="prop"><span class="chip c-prop">Proposed</span><span><span class="area">bioRxiv</span>Tollens pays bioRxiv to host public records, via an openRxiv Labs pilot.</span></li>
+        <li data-item data-status="prop"><span class="chip c-prop">Proposed</span><span><span class="area">Biosecurity</span>Biosecurity as a party: costly concealment, a dual-use screen, restricted evals.</span></li>
+        <li data-item data-status="park"><span class="chip c-park">Parked</span><span><span class="area">Berkeley</span>Master agreement terms; royalties versus gifts.</span></li>
+        <li data-item data-status="park"><span class="chip c-park">Parked</span><span><span class="area">Berkeley</span>Paying researchers on visas.</span></li>
+        <li data-item data-status="park"><span class="chip c-park">Parked</span><span><span class="area">Royalties</span>The contributor split. The model uses 70% (50 lab, 20 university), pending the master agreement.</span></li>
+        <li data-item data-status="park"><span class="chip c-park">Parked</span><span><span class="area">Records</span>Paper trajectories skip the eval stage (my call: yes).</span></li>
+        <li data-item data-status="park"><span class="chip c-park">Parked</span><span><span class="area">Pilot</span>20+ labs, or 4–5 anchor labs for depth and a headline payout.</span></li>
+        <li data-item data-status="park"><span class="chip c-park">Parked</span><span><span class="area">Pricing</span>Price of a paper-trajectory record, given the publication fees.</span></li>
+        <li data-item data-status="park"><span class="chip c-park">Parked</span><span><span class="area">Credit</span>Citation ledger for AI agents that use a record.</span></li>
+        <li data-item data-status="park"><span class="chip c-park">Parked</span><span><span class="area">Vision</span>Subsidizing other near-functional markets.</span></li>
+      </ul>
+    </section>
+
+    <!-- TYLER -->
+    <section id="tyler" data-sec>
+      <div class="sec-head">
+        <span class="kicker">Tyler update</span>
+        <h2>Emergent Ventures #91039</h2>
+        <p>Draft reply sits on the EV thread in Gmail. Attach Tollens-EV-Update.pdf before sending.</p>
+      </div>
+      <div class="card" data-item>
+        <div class="h-row"><h3>Six edits before it goes</h3><span class="chip c-open">To do</span></div>
+        <ol class="steps">
+          <li>Open with the Bush line.</li>
+          <li>Add paper trajectories and the publication-fee swap.</li>
+          <li>Add "a breadth no automated lab can match."</li>
+          <li>Name Doudna alongside Schekman and Betzig.</li>
+          <li>Say researchers are paid for their time under the university agreement.</li>
+          <li>Answer "what do you maximize" with progress itself, backed by the contract commitments.</li>
+        </ol>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer>
+  <span class="formula">P → Q, ¬Q ∴ ¬P</span>
+  <span>Modus tollens. The negative case is still a valid inference.</span>
+  <span>Numbers: final_model_oct.py · Updated Oct 12, 2026</span>
+</footer>
+</div>
+
+<div id="view-map" class="mapview" hidden aria-label="Mind map of the Tollens plan">
+  <div id="mm-world"><svg id="mm-edges" aria-hidden="true"></svg></div>
+  <div class="mm-ui mm-lens" id="mm-lens" role="toolbar" aria-label="Highlight related parts">
+    <span class="mm-lens-label">Highlight</span>
+    <div class="mm-lens-group" id="mm-threads"></div>
+    <span class="mm-lens-sep" aria-hidden="true"></span>
+    <div class="mm-lens-group" id="mm-status"></div>
+    <span class="mm-lens-sep" aria-hidden="true"></span>
+    <button type="button" class="mm-lchip" id="mm-mode" aria-pressed="false">Hide the rest</button>
+    <button type="button" class="mm-lchip" id="mm-clear" disabled>Clear</button>
+    <span class="mm-lens-count" id="mm-lens-count" aria-live="polite"></span>
+  </div>
+  <div class="mm-ui mm-tools" role="toolbar" aria-label="Map controls">
+    <button type="button" class="mm-btn" id="mm-out" aria-label="Zoom out">−</button>
+    <span class="mm-zoom" id="mm-zoom">100%</span>
+    <button type="button" class="mm-btn" id="mm-in" aria-label="Zoom in">+</button>
+    <button type="button" class="mm-btn" id="mm-fit">Fit all</button>
+  </div>
+  <div class="mm-ui mm-hint" id="mm-hint">Drag or scroll to pan · Pinch or Ctrl+scroll to zoom · Click a box to read more</div>
+  <aside class="mm-ui mm-panel" id="mm-panel" hidden></aside>
+</div>
+
+<script>
+(function(){
+  var root=document.documentElement, KEY='tollens-plan-theme';
+  try{var saved=localStorage.getItem(KEY); if(saved==='light'||saved==='dark'){root.setAttribute('data-theme',saved);}}catch(e){}
+  var btn=document.getElementById('theme-btn');
+  function eff(){var t=root.getAttribute('data-theme'); if(t){return t;} return (window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';}
+  function label(){btn.textContent=eff()==='dark'?'Light mode':'Dark mode';}
+  btn.addEventListener('click',function(){var n=eff()==='dark'?'light':'dark'; root.setAttribute('data-theme',n); try{localStorage.setItem(KEY,n);}catch(e){} label();});
+  label();
+
+  var q=document.getElementById('q'), count=document.getElementById('q-count');
+  var items=Array.prototype.slice.call(document.querySelectorAll('[data-item]'));
+  var secs=Array.prototype.slice.call(document.querySelectorAll('main section[data-sec]'));
+  items.forEach(function(el){el._t=el.textContent.toLowerCase();});
+  q.addEventListener('input',function(){
+    var v=q.value.trim().toLowerCase(), n=0;
+    items.forEach(function(el){var hit=!v||el._t.indexOf(v)>-1; el.hidden=!hit; if(v&&hit){n++;}});
+    secs.forEach(function(s){ if(!v){s.hidden=false;return;} s.hidden=!s.querySelector('[data-item]:not([hidden])'); });
+    count.textContent=v?(n+(n===1?' match':' matches')):'';
+  });
+
+  var fbtns=Array.prototype.slice.call(document.querySelectorAll('[data-filter]'));
+  fbtns.forEach(function(b){b.addEventListener('click',function(){
+    var f=b.getAttribute('data-filter');
+    fbtns.forEach(function(x){x.setAttribute('aria-pressed',x===b?'true':'false');});
+    document.querySelectorAll('#decisions [data-status]').forEach(function(li){li.classList.toggle('is-off',f!=='all'&&li.getAttribute('data-status')!==f);});
+  });});
+
+  var links=Array.prototype.slice.call(document.querySelectorAll('.rail a'));
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(es){es.forEach(function(e){ if(e.isIntersecting){ var id=e.target.id; links.forEach(function(a){a.classList.toggle('on',a.getAttribute('href')==='#'+id);}); } });},{rootMargin:'-15% 0px -75% 0px'});
+    secs.forEach(function(s){io.observe(s);});
+  }
+})();
+</script>
+<script>
+(function(){
+'use strict';
+var LOGO='data:image/png;base64,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';
+var STATUS={dec:['c-dec','Decided'],prop:['c-prop','Proposed'],park:['c-park','Parked'],open:['c-open','Open'],fact:['c-dec','Fact'],think:['c-prop','Thinking'],now:['c-open','Now']};
+
+var DATA={id:'root',t:'Tollens',s:'Pays to capture the real story of science',sec:'overview',
+ d:["Science keeps almost no record of how it's actually done. Null results and failed experiments stay in notebooks. A published paper squeezes months of work into five pages, and its line of reasoning is written after the results are in.",
+    "Tollens pays researchers for half-hour sittings: an AI reads their raw files, asks only what it can't infer, and produces a record of what was really tried, in what order, and why. AI labs license those records, first as evals their models have never seen and then as training data. After 12 months every record goes public under the researcher's name.",
+    "Vannevar Bush's Science: The Endless Frontier birthed a system that pays for discoveries and publishes the ones that worked. Tollens pays to capture the real story."],
+ c:[
+  {id:'record',t:'The record',s:'One thing, three sources, one rule',sec:'record',
+   d:"Every record is the same thing: the real story of an experiment, with its raw files. What changes is where it comes from and whether its result is already public.",
+   c:[
+    {id:'sources',g:['researchers'],t:'Three sources',s:'Backlog, private lab record, fee swap',sec:'record',d:"Where records come from, in the order they come online.",c:[
+      {t:'Backlog sittings',g:['researchers'],s:'Half-hour sitting; the AI fills the gaps',sec:'record',d:"A half-hour sitting. The AI reads the files a researcher already has and asks only what it can't infer. About three records per sitting. This is stage 1 supply."},
+      {t:'Private lab record',g:['researchers','integrity','safety'],s:'Logged as it happens, inside the lab',st:'prop',sec:'record',d:"The lab logs attempts and mistakes as they happen, inside the lab and its own network first, with scoop protection. A record leaves only when the lab commits it and sets its own release date. This is stage 2 supply."},
+      {t:'Publication-fee swap',g:['researchers','tyler','money'],s:'The full story leading to a paper',st:'dec',sec:'record',d:"Tollens pays a paper's publication fees in exchange for the full trajectory leading to it: the data, dead ends and reasoning the five pages leave out."}
+    ]},
+    {t:'The one rule',g:['ailabs'],s:'Unpublished: eval first. Published: training.',st:'park',sec:'record',d:"An unpublished result serves as an eval first, because no model has seen it. A published result goes straight to training, since its answer is already online. That second half is my call, parked for you. Everything goes public at 12 months."},
+    {t:'Lifecycle',g:['ailabs','biorxiv'],s:'Eval 0–3 months, training to 12, then public',sec:'record',b:["Months 0–3: private eval.","Months 3–12: training licence.","Month 12: public under the researcher's name, CC-BY, with a DOI.","A researcher can hold one extra year for scoop protection. A held record earns nothing, and its share goes to the other contributors. 24 months is the hard ceiling."]},
+    {t:'Provenance labels',g:['integrity','ailabs'],s:'Registered, rebuilt or recalled',sec:'record',b:["Registered beforehand: reasoning written before the outcome, proven by the timestamp. Highest value.","Rebuilt from dated files: drafted from protocols and notebook entries before the AI sees the outcome.","Recalled from memory: training only."]},
+    {t:'Hindsight rule',g:['integrity'],s:'Draft before seeing the outcome',st:'prop',sec:'record',d:"The AI drafts each record from dated files before it sees the outcome. The researcher corrects facts but can't rewrite the story. Papers do the opposite: their reasoning is written after the results."},
+    {t:'Fingerprints',g:['integrity','safety','researchers'],s:'Prove when each entry was written',st:'prop',sec:'record',b:["Each entry is fingerprinted and timestamped when written. That proves later it wasn't edited, without revealing what it says.","Tollens pays the sitting fee when a lab commits a record with a release date.","A committed record can serve as a private eval while sealed. AI labs must agree not to keep eval prompts.","Keep it a small attempts log. Benchling owns the full lab notebook."]},
+    {t:'Evals and stump count',g:['ailabs','researchers','safety'],s:'"Stumped 41 of 46 runs across 9 models"',st:'dec',sec:'record',b:["A public leaderboard with about 5% of items open as samples. Live evals stay private and run through an API on subscription.","Items retire on saturation, a serve limit or a maximum age, then become training data.","Each record counts the frontier-model runs it stumped, without naming the model. The final count is printed on the public record.","The rubric and expert follow-up questions stay private when a record goes public."]}
+   ]},
+  {id:'parties',t:'Who says yes',s:"Each party gets something it can't get elsewhere",sec:'parties',
+   d:"Tyler's first objection was that nobody had a reason to contribute. This is what each party gets.",
+   c:[
+    {t:'Researcher',g:['researchers','tyler'],s:'About $96 an hour, a DOI, a stump count',sec:'parties',b:["About $96 an hour, with no write-up.","A DOI under their own name.","A public count of the model runs their result stumped.","Later: a citation each time an AI agent uses their record."]},
+    {t:'PI and lab',g:['researchers','tyler'],s:'One signature, royalties, fees covered',sec:'parties',b:["One signature for the whole lab.","Royalties the PI controls.","Publication fees covered.","A free private integrity check before submitting a paper.","The lab's own searchable memory."]},
+    {t:'University',g:['legal','money'],s:'20 points on data that earns nothing today',sec:'parties',b:["20 royalty points on data that earns the university nothing today. It was never going to be licensed or commercialized.","A structure its lawyers know from HHMI.","The data stays the university's. Tollens owns only its structured record."]},
+    {t:'bioRxiv and journals',g:['biorxiv','integrity'],s:'Free provenance; Tollens pays for hosting',st:'prop',sec:'parties',b:["Raw files are the evidence fraud detection needs. Provenance checks are free, and bioRxiv is never charged.","Tollens pays bioRxiv to host the public records: AI money paying for the commons it uses. That needs a new article type, so ask through an openRxiv Labs pilot.","Later: bring bioRxiv's comment sections to life around the records.","Sholto David would use the records the way he uses PubPeer.","In return: citability, a channel to researchers, legitimacy."]},
+    {t:'AI labs',g:['ailabs'],s:'Self-refilling evals, real reasoning, breadth',sec:'parties',b:["Evals that refill themselves, because researchers keep failing.","The real reasoning leading to discoveries.","A breadth no automated lab can match.","Non-exclusive licences. Buyers keep permanent use of what they ingested during their term, never ownership or resale. Live eval items are never handed over, only scores.","They can post requests that pay researchers extra for matching records."]},
+    {t:'Biosecurity',g:['safety','integrity'],s:'Costly concealment, a dual-use screen',st:'think',sec:'parties',b:["Where recording everything is the norm, hiding work is costly: gaps stand out, and investigators get a timestamped trail.","A determined bad actor simply won't record. Claim harder to hide, never impossible.","The records are dual-use too. Screen anything involving dangerous pathogens or toxins before licensing, with a restricted tier.","Who cares: AI-lab safety teams wanting a screened supplier and restricted evals of dangerous capability, biosecurity funders, MATS."]}
+   ]},
+  {id:'money',g:['money'],t:'Money',s:'Advance back first, then contributors get their share',sec:'money',
+   d:"Numbers come from final_model_oct.py: $50 sittings, a solo founder and a $2.5M seed.",
+   c:[
+    {t:'The split',g:['money','legal'],s:'Model: 50 lab, 20 university, 30 Tollens',st:'park',sec:'money',d:"Buyer cash first repays the researcher's advance. The model splits every dollar after that 50 to the lab, 20 to the university and 30 to Tollens. The real split waits on the master agreement terms."},
+    {t:'Logger rule',g:['money','researchers'],s:'Full share to Jan 2028, then 20% off without the logger',st:'dec',sec:'money',d:"Records of work up to January 2028 earn the full contributor share. After that, a record made without the Tollens logger loses 20% of its quality score, and so 20% of its royalties. Each lab's clock starts at January 2028 or when it gets the logger, whichever is later, and goes by the date the experiment started. Setups where the logger can't run are exempt. This 20% is the only hindsight penalty, so the provenance label doesn't cut pay a second time. Replaces the 70%/50% rule (Oct 12)."},
+    {t:'Sitting IOU',g:['money','researchers'],s:'+20%, paid when the record is released',st:'prop',sec:'money',d:"A 20% sitting-fee premium, paid on release, for entries whose fingerprint predates the outcome. The fingerprint is the IOU."},
+    {t:'Researcher pay',g:['money','researchers','tyler'],s:'$50 per 30 minutes, $15 extensions',sec:'money',d:"$50 per 30-minute sitting plus $15 per 15-minute extension, two at most. About $96 an hour, against a loaded $23 for a grad student and $45 for a postdoc. Mercor and Outlier pay PhDs about $60–90 an hour."},
+    {t:'Two years',g:['money','tyler'],s:'Bookings $250K, then $775K',sec:'money',b:["Year 1: 6 universities, 50 labs, 911 records, 1 buyer, $250K in bookings, 21% margin, $877K burn.","Year 2: 12 universities, 172 labs, 3,428 records, 3 buyers, $775K in bookings, 25% margin, $1.21M burn.","Buyer cash exceeds researcher pay by $279K over the two years, so the seed pays only for the team."]},
+    {t:'Per lab',g:['money','researchers','tyler'],s:'$3.3K in year 2, ~$48K at scale',sec:'money',b:["Year 2: $3,346 ($530 sitting pay, $2,816 royalties). The university's 20 points: $1,127.","At scale: about $48K, from 30 buyers at mid-range prices (~$29M a year) across 300 labs. About $24K at 600 labs.","Add labs only as fast as buyer revenue grows."]},
+    {t:'Year 4',g:['money','tyler'],s:'40 universities, ~600 labs, $6–12M',sec:'money',d:"40 universities, about 600 labs, about 14,000 records a year, 15 buyers and $6–12M in bookings."},
+    {t:'Not modelled yet',g:['money','ailabs'],s:'Eval subscriptions, fee swap, gifts',st:'open',sec:'money',d:"Eval subscriptions (upside), publication-fee costs and what a paper-trajectory record sells for, lab gifts, and the logger rule."}
+   ]},
+  {id:'berkeley',g:['legal'],t:'Berkeley agreement',s:'One master agreement fixes four problems',sec:'berkeley',
+   d:"Berkeley's IP office (Mike Cohen) supports Tollens. The master agreement is unsigned, and its terms are parked for now.",
+   c:[
+    {t:'Ownership',g:['legal'],s:'The Regents own research data',st:'fact',sec:'berkeley',d:"UC's Research Data Policy (July 2022) says the Regents own research data. Records with results need the university's licence."},
+    {t:'University share',g:['legal','money'],s:'20 points; royalties or gifts later',st:'park',sec:'berkeley',d:"20 royalty points. Whether lab money flows as royalties or gifts is unsettled."},
+    {t:'Paying researchers',g:['legal','researchers','tyler'],s:'Legal for their time; write it in',st:'prop',sec:'berkeley',d:"Paying for time is legal. The data must come through the university, so write direct pay into the master agreement. Faculty report outside work yearly; postdocs need an approved exception. Paying visa holders is parked."},
+    {t:'Overhead on lab money',g:['legal','money'],s:'Gifts 13%, sponsored research ~60%',st:'park',sec:'berkeley',d:"Research gifts carry a 13% fee; sponsored research about 60% overhead. A gift tied to submissions counts as sponsored. Options: a flat gift per signed lab, or a fund that pays only after release."},
+    {t:'HHMI precedent',g:['legal'],s:'One agreement per university',sec:'berkeley',d:"HHMI employs its investigators directly and signs one collaboration agreement per university, covering lab space, fees and IP, before its first investigator starts. It refuses overhead on its gifts. Copy the structure now; ask for the no-overhead waiver once Tollens brings real money to campus."},
+    {t:'Skip the IAA',g:['legal','money'],s:'Berkeley could buy 2% of every raise',st:'prop',sec:'berkeley',d:"Berkeley's standard startup deal, the Innovation Access Agreement, lets it buy up to 2% of every raise, SAFEs included, and its licence can't be passed on to AI labs. Ask for royalty points instead, and pay every university the same way so Tollens stays neutral."}
+   ]},
+  {id:'proof',g:['tyler'],t:'Proof',s:"What's already happened",sec:'proof',
+   c:[
+    {t:'Buyers',g:['ailabs','tyler'],s:'Isomorphic, Periodic, Lila, Edison and more',sec:'proof',b:["Isomorphic (call Sept 28): incorporation and an NDA, then a pilot LOI.","Periodic: William Fedus passed you to the materials team, who want unpublished materials data.","Lila, Edison, OpenAI and Anthropic interested.","Every buyer waits on incorporation and an NDA."]},
+    {t:'Scientists',g:['tyler','biorxiv'],s:'Doudna, Schekman, Betzig, Eisen',sec:'proof',b:["Three Nobel laureates: Doudna, Schekman and Betzig. Betzig came in skeptical.","Mike Eisen, co-founder of PLOS.","Sholto David, whose analysis led to the 2024 Dana-Farber retractions."]},
+    {t:'bioRxiv',g:['biorxiv'],s:'Schekman took it to Inglis',sec:'proof',d:"Schekman took Tollens to John Inglis, bioRxiv's co-founder. You answered Inglis's three objections in writing, and both are interested. Citability is being worked out through Schekman."},
+    {t:'Fraud research',g:['integrity','tyler'],s:'Missing data: ~3% to 23% of retractions',sec:'proof',d:"One in five of 8,321 image-related retractions cites original data that couldn't be produced, up from about 3% before 2017 to 23% since 2020. Plus a backtest on 3,390 retracted papers against matched controls."},
+    {t:'Product',g:['researchers'],s:'Console that drafts records with sources',sec:'proof',d:"A working researcher console drafts records from uploads, links every value to its source and flags what's missing. It handles successful experiments as well as nulls."},
+    {t:'Investors met',g:['money','tyler'],s:'a16z, House Fund, NEA, Blackstone and more',sec:'proof',d:"a16z, The House Fund, NEA, Blackstone, Contrary, Coral Capital, Dorm Room Fund and Afore Capital. Free Ventures batch interview on Oct 3."},
+    {t:'Team',g:['tyler'],s:'Solo; full-time once funded',sec:'proof',d:"Solo founder. Full-time once the pilot is funded. Berkeley's IP office has backed Tollens since the Aug 25 call, with partnered PIs in MCB, Nutrition and Immunology."}
+   ]},
+  {id:'path',t:'Path and raise',s:'From a $46.9K grant to 30 buyers',sec:'path',
+   c:[
+    {t:'Separation + incorporation',g:['now','legal'],s:'One sitting with the lawyer',st:'now',sec:'path',d:"Sign the separation agreement, incorporate and issue Harrison's shares in one sitting. It is what's stalling everything, and it unblocks every buyer."},
+    {t:'EV grant',g:['tyler','money'],s:'$46,900 for ~1,500 records',sec:'path',d:"About 530 paid sittings (roughly 1,500 records from 20+ Berkeley labs), SOC 2 Type I, counsel, insurance and outreach."},
+    {t:'Pilot LOIs',g:['ailabs'],s:'Isomorphic first',sec:'path',d:"Isomorphic first, then Periodic, Lila and Edison."},
+    {t:'Seed auction',g:['money','tyler'],s:'$2.5M floor for no more than 20%',st:'dec',sec:'path',d:"A floor of $2.5M for no more than 20% ($12.5M post-money). Run it once the first LOIs land, with competing term sheets and a deadline. The floor sits under the Q1 2026 median seed valuation ($18M pre-money in the PitchBook-NVCA figures)."},
+    {t:'Series A',g:['money'],s:'About month 18',sec:'path',d:"About $1.0M in cash at month 18, when the Series A process starts."},
+    {t:'Scale',g:['money','tyler'],s:'30 buyers across 300 labs',sec:'path',d:"More universities, DOE's Genesis Mission and a voluntary HHMI pilot. About 30 buyers across 300 labs."},
+    {id:'stages',g:['ailabs'],t:'Three stages',s:'Harvest, capture, reality grades',sec:'path',c:[
+      {t:'Stage 1',g:['researchers'],s:'Harvest the backlog',sec:'path',d:"Sittings over what labs already have in their notebooks."},
+      {t:'Stage 2',g:['researchers','integrity'],s:'Capture as it happens',sec:'path',d:"The private lab record turns new work into registered records."},
+      {t:'Stage 3',g:['ailabs','safety'],s:'Reality grades the models',sec:'path',d:"Models suggest experiments, researchers pick what to run, and reality returns the result. Researchers keep the decision because their own picks explore gaps a model would never see. Each record keeps the suggestion, the choice and the result, so overrides that worked show where the model is blind, and the record trains the next model. Across every lab on the planet, the speed is set by how long each round takes. The evals run through all three stages."}
+    ]},
+    {t:'Reddit',g:['researchers'],s:'r/labrats first, after incorporation',st:'prop',sec:'path',b:["Wait for incorporation and a waitlist page.","Start in r/labrats' monthly rant thread, and lead with something free.","Name the AI labs up front. Never let them look like a hidden buyer.","Measure signups by university email, not upvotes."]}
+   ]},
+  {id:'vision',t:'Vision',s:"Fill the hole in Bush's system",sec:'vision',
+   c:[
+    {t:"Bush's hole",g:['tyler'],s:'Paid for discoveries, never the record',sec:'vision',d:"Vannevar Bush's Science: The Endless Frontier birthed a system that pays for discoveries and publishes the ones that worked. It never paid for the record of how science is done. Tollens pays to capture the real story."},
+    {t:'Navier–Stokes',g:['ailabs','tyler'],s:'Lab science has only the experiment',sec:'vision',d:"AI agents just found the Navier–Stokes blow-up, still being checked by mathematicians, by extending a strategy two mathematicians had opened. Math has a mechanical checker. Lab science has only the experiment. Tollens bets that the record of what experiments returned, and the reasoning leading to it, is what models need to make leaps in lab science."},
+    {t:'Research taste',g:['ailabs'],s:'A pocket Einstein for every researcher',sec:'vision',d:"Researchers at Anthropic, OpenAI and Edison, and the ML researchers in the Doudna lab, call this the data for distilling research taste. The end state is a pocket Einstein for every researcher, compounding at the speed labs can run experiments."},
+    {t:'Breadth',g:['ailabs','tyler'],s:'No automated lab can match it',sec:'vision',d:"Self-driving labs generate new data in narrow areas. The world's labs have already run the experiments, across every field."},
+    {t:'The next jump',g:['tyler'],s:'Cell, human, then what?',sec:'vision',d:"Each jump in intelligence so far, from cell to human, opened frontiers the level below could not imagine. The full record of how science is done is what the next jump learns from, and today nobody keeps it."},
+    {t:'Market failure',g:['tyler','money'],s:'A public good AI demand finally funds',sec:'vision',d:"A null result is a public good nobody funds. AI labs' private demand finally pays for it. That is Tyler's own field. Subsidizing other near-functional markets is parked."},
+    {t:'Safety',g:['safety','integrity'],s:'Harder to hide',sec:'vision',d:"Recorded failures make bad actors harder to hide. Hypotheses registered in advance expose mismatches between what was planned and what was reported."}
+   ]},
+  {id:'governance',t:'Governance',s:'Maximize progress itself',sec:'governance',
+   c:[
+    {t:'Progress itself',g:['tyler'],s:'The answer to "what do you maximize"',st:'dec',sec:'governance',d:"What Tollens maximizes is progress itself. The contract commitments keep it from being traded for margin."},
+    {t:'Advisory board',g:['tyler'],s:'Doudna, Schekman, Betzig; advises only',st:'dec',sec:'governance',d:"Doudna, Schekman and Betzig are natural fits, with Eisen on a separate track. The board advises only: members' labs may contribute and get paid, so they step out of anything touching payouts or pricing, and you keep the vision."},
+    {t:'Contract commitments',g:['tyler','researchers','money'],s:'Contributor share, public by month 24',sec:'governance',b:["The contributor share, cut 20% only for avoidable hindsight.","Public release by month 24 at the latest.","Integrity checks free for bioRxiv and journals."]},
+    {t:'Eisen and Schekman',g:['biorxiv'],s:'Separate tracks',sec:'governance',d:"They fell out publicly over eLife and don't yet know about each other's support. Ask each before naming them together, and never pitch Schekman or openRxiv in eLife terms."},
+    {t:'Audiences apart',g:['biorxiv','ailabs'],s:'No AI-lab story for openRxiv',sec:'governance',d:"openRxiv dislikes content flowing to AI labs. Lead with integrity and open release there; keep the AI-lab story for buyers and investors."}
+   ]},
+  {id:'positioning',t:'Positioning',s:'Why nobody else has this',sec:'positioning',
+   c:[
+    {t:'Qokedas',g:['legal','ailabs'],s:"Buys files individuals don't own",sec:'positioning',d:"Qokedas buys raw files from individuals, who at US universities usually don't own them. Tollens licenses through the university and adds the context that was never in the files."},
+    {t:'Mercor and Scale',g:['ailabs','researchers'],s:'Judgment on demand',sec:'positioning',d:"They sell expert judgment on demand. Tollens has the historical record of real experiments, which can't be produced on demand."},
+    {t:'Publishers',g:['biorxiv','ailabs'],s:'The five polished pages',sec:'positioning',d:"Publishers license the five polished pages. Tollens has the 30 pages leading to them."},
+    {t:'Self-driving labs',g:['ailabs','tyler'],s:'New data in narrow areas',sec:'positioning',d:"Lila and Periodic generate new data in narrow areas. Tollens has a breadth no automated lab can match, which is why they also buy."}
+   ]},
+  {id:'decisions',t:'Next and open',s:"What's next, open and parked",sec:'decisions',
+   c:[
+    {id:'next',g:['now'],t:'Next actions',s:'Three things now',st:'now',sec:'overview',c:[
+      {t:'Close the separation',g:['now','legal'],s:'Then incorporate the same day',st:'now',sec:'overview',d:"Have the lawyer sign the separation agreement, incorporate and issue Harrison's shares in one sitting."},
+      {t:'Send NDAs',g:['now','ailabs'],s:'Isomorphic, Periodic, Lila, Edison',sec:'overview',d:"Every buyer needs incorporation and an NDA before pilot or LOI talks continue."},
+      {t:'MATS Incubation',g:['now','safety'],s:'Apply by October 31 or not',sec:'overview',d:"The biosecurity eval angle fits the Incubation track's safety framing. Applications close October 31."}
+    ]},
+    {t:'Open',s:'Unresolved risks',st:'open',sec:'decisions',c:[
+      {t:'No buyer has paid',g:['ailabs','tyler'],s:'All wait on incorporation',sec:'decisions',d:"No buyer has paid yet. Every buyer waits on incorporation and an NDA."},
+      {t:'Old experiments',g:['integrity','researchers'],s:'Often lack raw files',sec:'decisions',d:"Old experiments often lack raw files. Those records get a lower label."},
+      {t:'Solo founder',g:['tyler'],s:'Say it plainly',sec:'decisions',d:"Solo founder since Harrison left. Say it plainly."}
+    ]},
+    {t:'Parked',s:'Decide later',st:'park',sec:'decisions',c:[
+      {t:'Berkeley terms',g:['legal','money'],s:'Royalties or gifts',sec:'decisions'},
+      {t:'Visa pay',g:['legal','researchers'],s:'Paying researchers on visas',sec:'decisions'},
+      {t:'Paper path',g:['ailabs'],s:'Trajectories skip evals (my call: yes)',sec:'decisions'},
+      {t:'Pilot breadth',g:['researchers'],s:'20+ labs or 4–5 anchor labs',sec:'decisions'},
+      {t:'Paper-record price',g:['money','ailabs'],s:'Given the publication fees',sec:'decisions'},
+      {t:'Agent citations',g:['researchers','ailabs'],s:'Credit each time an AI uses a record',sec:'decisions'},
+      {t:'Subsidized markets',g:['money'],s:'Other near-functional markets',sec:'decisions'}
+    ]}
+   ]}
+ ]};
+
+
+var THREADS=[['tyler','Tyler pitch'],['researchers','Researchers & labs'],['ailabs','AI labs'],['money','Money'],['integrity','Integrity & fraud'],['biorxiv','bioRxiv'],['legal','Universities & legal'],['safety','Safety'],['now','This week']];
+var TNAME={}; THREADS.forEach(function(t){ TNAME[t[0]]=t[1]; });
+var STATUSES=[['dec','Decided','st-dec'],['prop','Proposed','st-prop'],['park','Parked','st-park'],['open','Open','st-open']];
+var SGROUP={dec:'dec',fact:'dec',prop:'prop',think:'prop',park:'park',open:'open',now:'open'};
+
+var G={1:90,2:56,3:44,4:40}, GV={1:34,2:12,3:10,4:8}, MIN=0.06, MAX=2.5;
+var reduce=!!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+var vp=document.getElementById('view-map'), world=document.getElementById('mm-world'), svg=document.getElementById('mm-edges');
+var panel=document.getElementById('mm-panel'), zoomLbl=document.getElementById('mm-zoom'), hint=document.getElementById('mm-hint');
+var lensBar=document.getElementById('mm-lens'), countEl=document.getElementById('mm-lens-count');
+var modeBtn=document.getElementById('mm-mode'), clearBtn=document.getElementById('mm-clear');
+var planView=document.getElementById('view-plan'), tabPlan=document.getElementById('tab-plan'), tabMap=document.getElementById('tab-map');
+var q=document.getElementById('q'), qc=document.getElementById('q-count'), topBar=document.querySelector('.top');
+var s=1, tx=0, ty=0, anim=null, built=false, touched=false, dragMoved=false, all=[], byId={}, root=null, selected=null;
+var lens={threads:{}, status:{}, q:'', hide:false};
+
+function setTop(){ document.documentElement.style.setProperty('--top-h', topBar.offsetHeight+'px'); }
+setTop();
+if('ResizeObserver' in window){ new ResizeObserver(setTop).observe(topBar); } else { window.addEventListener('resize', setTop); }
+
+function esc(x){ return String(x).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function clamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
+function chip(st){ return (st&&STATUS[st])?'<span class="chip '+STATUS[st][0]+'">'+STATUS[st][1]+'</span>':''; }
+function keys(o){ return Object.keys(o); }
+function toggleKey(o,k){ if(o[k]){ delete o[k]; } else { o[k]=true; } }
+
+function build(d,parent,depth,side){
+  var n={d:d,parent:parent,depth:depth,side:side,kids:[],id:d.id||('n'+all.length),on:false,lens:''};
+  all.push(n); byId[n.id]=n;
+  (d.c||[]).forEach(function(cd,i){ n.kids.push(build(cd,n,depth+1,depth===0?(i<5?'r':'l'):side)); });
+  return n;
+}
+
+function makeEl(n){
+  var el=document.createElement('div');
+  el.className='mm-node d'+Math.min(n.depth,3);
+  el.tabIndex=0; el.setAttribute('role','button'); el.setAttribute('data-id',n.id);
+  var h='<div class="mm-in">';
+  if(n.depth===0){ h+='<div class="mm-lock"><img class="mm-logo" src="'+LOGO+'" alt="" draggable="false"><span class="mm-t">'+esc(n.d.t)+'</span></div>'; }
+  else { h+='<div class="mm-h"><span class="mm-t">'+esc(n.d.t)+'</span>'+chip(n.d.st)+'</div>'; }
+  if(n.d.s){ h+='<div class="mm-s">'+esc(n.d.s)+'</div>'; }
+  h+='</div>';
+  el.innerHTML=h; n.inner=el.firstChild;
+  el.setAttribute('aria-label', n.d.t+(n.d.s?': '+n.d.s:''));
+  n.el=el;
+  el.addEventListener('click',function(){ if(dragMoved){ return; } activate(n); });
+  el.addEventListener('keydown',function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); activate(n); } });
+  world.appendChild(el);
+}
+
+// concept map: each topic is a panel (its title card, its points on a spine with an arrow into each);
+// panels sit around Tollens and neighbours are joined by straight, labelled links
+var LINKS=[['root','record','pays to capture'],['root','vision','aims at'],['root','governance','maximizes progress'],['root','path','gets there by'],
+  ['berkeley','record','licenses the data'],['record','parties','gives each party'],['positioning','parties','why they choose it'],
+  ['parties','money','AI labs pay'],['money','path','funds'],['proof','parties','early yeses'],['decisions','path','first steps']];
+var SPLIT={record:2,parties:3,money:4,berkeley:3,proof:4,vision:4,governance:3,positioning:2};
+var PATH_COLS=[['Separation + incorporation','EV grant','Pilot LOIs','Seed auction'],['Series A','Scale','Reddit'],['Three stages']];
+var FLIP={vision:1,berkeley:1,proof:1};
+var PAD=24, CW=236, SW=196, GAPY=14, SUBG=10, GV=100, GB=48;
+var bands=[], segs=[], LP=[];
+
+function sizeNodes(){
+  all.forEach(function(n){
+    var s=n.el.style; s.height=''; s.maxWidth='';
+    s.width=(n.depth===2)?CW+'px':(n.depth>=3)?SW+'px':'max-content';
+    if(n.depth===1){ s.maxWidth=(n.kids.some(function(k){ return k.kids.length; })&&n.kids.every(function(k){ return k.kids.length; })?1064:552)+'px'; }
+  });
+  all.forEach(function(n){ if(n.depth===1){ n.el.style.width=Math.max(260,n.el.offsetWidth)+'px'; } });
+  all.forEach(function(n){ n.w=n.el.offsetWidth; n.h=n.el.offsetHeight; n.el.style.width=n.w+'px'; n.el.style.height=n.h+'px'; });
+}
+
+// a point's own points hang below it, off a short spine on its left (two columns under a bus when long)
+function subsAt(P,card,cx,cy,cols){
+  var list=card.kids, y=cy+card.h+SUBG;
+  if(cols===1){
+    var sx=cx+20, last=0;
+    list.forEach(function(s){ P.place.push({n:s,x:cx+40,y:y}); last=y+s.h/2; P.arrows.push({x1:sx,y1:last,x2:cx+39,y2:last,to:s}); y+=s.h+SUBG; });
+    P.lines.push({x1:sx,y1:cy+card.h,x2:sx,y2:last,owner:card});
+    return y-SUBG;
+  }
+  var busY=y+8, sxs=[cx+20,cx+280], xs=[cx+40,cx+300], half=Math.ceil(list.length/2), bottom=0;
+  P.lines.push({x1:sxs[0],y1:cy+card.h,x2:sxs[0],y2:busY,owner:card});
+  P.lines.push({x1:sxs[0],y1:busY,x2:sxs[1],y2:busY,owner:card});
+  [list.slice(0,half),list.slice(half)].forEach(function(col,ci){
+    var yy=busY+18, last=0;
+    col.forEach(function(s){ P.place.push({n:s,x:xs[ci],y:yy}); last=yy+s.h/2; P.arrows.push({x1:sxs[ci],y1:last,x2:xs[ci]-1,y2:last,to:s}); yy+=s.h+SUBG; });
+    P.lines.push({x1:sxs[ci],y1:busY,x2:sxs[ci],y2:last,owner:card});
+    bottom=Math.max(bottom,yy-SUBG);
+  });
+  return bottom;
+}
+function columnAt(P,items,xl,y,spineX,side){
+  var last=0;
+  items.forEach(function(k){
+    P.place.push({n:k,x:xl,y:y}); last=y+k.h/2;
+    P.arrows.push(side==='left'?{x1:spineX,y1:last,x2:xl-1,y2:last,to:k}:{x1:spineX,y1:last,x2:xl+CW+1,y2:last,to:k});
+    y=(k.kids.length?subsAt(P,k,xl,y,1):y+k.h)+GAPY;
+  });
+  return {bottom:y-GAPY,last:last};
+}
+// two columns either side of a spine running down from the title card
+function comb(cat,split){
+  var P={place:[],lines:[],arrows:[]}, pw=2*PAD+2*CW+80, sp=pw/2, y0=PAD+cat.h+30;
+  P.place.push({n:cat,x:Math.round((pw-cat.w)/2),y:PAD});
+  var a=columnAt(P,cat.kids.slice(0,split),PAD,y0,sp,'right'), b=columnAt(P,cat.kids.slice(split),PAD+CW+80,y0,sp,'left');
+  P.lines.push({x1:sp,y1:PAD+cat.h,x2:sp,y2:Math.max(a.last,b.last),owner:cat});
+  P.w=pw; P.h=Math.max(a.bottom,b.bottom)+PAD; return P;
+}
+// three columns hanging off a bus, each with its own spine
+function comb3(cat,cols){
+  var P={place:[],lines:[],arrows:[]}, pitch=CW+64, pw=2*PAD+40+2*pitch+CW, busY=PAD+cat.h+22, bottom=0;
+  var xl=function(i){ return PAD+40+i*pitch; }, used={};
+  var lists=cols.map(function(ts){ return ts.map(function(t){ return cat.kids.filter(function(k){ return k.d.t===t; })[0]; }).filter(function(k){ if(k){ used[k.id]=1; } return !!k; }); });
+  cat.kids.forEach(function(k){ if(!used[k.id]){ lists.slice().sort(function(a,b){ return a.length-b.length; })[0].push(k); } });
+  P.place.push({n:cat,x:Math.round((pw-cat.w)/2),y:PAD});
+  P.lines.push({x1:pw/2,y1:PAD+cat.h,x2:pw/2,y2:busY,owner:cat});
+  P.lines.push({x1:xl(0)-20,y1:busY,x2:xl(lists.length-1)-20,y2:busY,owner:cat});
+  lists.forEach(function(items,i){
+    var r=columnAt(P,items,xl(i),busY+24,xl(i)-20,'left');
+    P.lines.push({x1:xl(i)-20,y1:busY,x2:xl(i)-20,y2:r.last,owner:cat}); bottom=Math.max(bottom,r.bottom);
+  });
+  P.w=pw; P.h=bottom+PAD; return P;
+}
+// a title card, a bus, and one group card per column with its points below
+function org(cat){
+  var P={place:[],lines:[],arrows:[]}, kids=cat.kids, GX=48;
+  var widths=kids.map(function(k){ return k.kids.length>5?CW+260:CW; });
+  var pw=2*PAD+widths.reduce(function(s,w){ return s+w; },0)+GX*(kids.length-1), busY=PAD+cat.h+22, top=busY+30, x=PAD, bottom=0, centres=[];
+  P.place.push({n:cat,x:Math.round((pw-cat.w)/2),y:PAD});
+  kids.forEach(function(k,i){
+    P.place.push({n:k,x:x,y:top}); centres.push(x+CW/2);
+    P.arrows.push({x1:x+CW/2,y1:busY,x2:x+CW/2,y2:top-1,to:k});
+    bottom=Math.max(bottom,k.kids.length?subsAt(P,k,x,top,k.kids.length>5?2:1):top+k.h);
+    x+=widths[i]+GX;
+  });
+  P.lines.push({x1:pw/2,y1:PAD+cat.h,x2:pw/2,y2:busY,owner:cat});
+  P.lines.push({x1:centres[0],y1:busY,x2:centres[centres.length-1],y2:busY,owner:cat});
+  P.w=pw; P.h=bottom+PAD; return P;
+}
+// top-row panels put their title card at the bottom, facing Tollens
+function flip(P){
+  P.place.forEach(function(p){ p.y=P.h-p.y-p.n.h; });
+  P.lines.concat(P.arrows).forEach(function(s){ s.y1=P.h-s.y1; s.y2=P.h-s.y2; });
+}
+var meas=null;
+function textW(t){
+  if(!meas){ meas=document.createElement('canvas').getContext('2d'); }
+  meas.font='italic 15px '+(getComputedStyle(vp).getPropertyValue('--f-display').trim()||'serif');
+  return meas.measureText(t).width;
+}
+function gapFor(t){ return Math.max(112,Math.ceil(textW(t))+60); }
+function setPos(n,x,y){ n.x=Math.round(x); n.y=Math.round(y); n.cx=n.x+n.w/2; n.cy=n.y+n.h/2; n.el.style.transform='translate('+n.x+'px,'+n.y+'px)'; }
+function layout(){
+  var P={}, pos={};
+  root.kids.forEach(function(c){
+    var p=(c.id==='path')?comb3(c,PATH_COLS):(c.id==='decisions')?org(c):comb(c,SPLIT[c.id]||Math.ceil(c.kids.length/2));
+    if(FLIP[c.id]){ flip(p); }
+    P[c.id]=p;
+  });
+  function place(id,x,y){ var s=(id==='root')?root:P[id]; pos[id]={x:Math.round(x),y:Math.round(y),w:s.w,h:s.h}; }
+  function R(id){ return pos[id].x+pos[id].w; }
+  function Bt(id){ return pos[id].y+pos[id].h; }
+  function CX(id){ return pos[id].x+pos[id].w/2; }
+  function xo(a,b){ return pos[a].x<pos[b].x+pos[b].w&&pos[b].x<pos[a].x+pos[a].w; }
+  // middle row on y=0, the top row as low as its gap allows, the bottom row tucked under it
+  place('root',-root.w/2,-root.h/2);
+  place('governance',pos.root.x-gapFor('maximizes progress')-P.governance.w,-P.governance.h/2);
+  place('record',R('root')+gapFor('pays to capture'),-P.record.h/2);
+  place('parties',R('record')+gapFor('gives each party'),-P.parties.h/2);
+  place('positioning',R('parties')+gapFor('why they choose it'),-P.positioning.h/2);
+  place('vision',CX('root')-P.vision.w/2,pos.root.y-GV-P.vision.h);
+  place('berkeley',CX('record')-P.berkeley.w/2,pos.record.y-GV-P.berkeley.h);
+  place('proof',CX('parties')-P.proof.w/2,pos.parties.y-GV-P.proof.h);
+  place('path',CX('root')-40,Bt('root')+GV);
+  if(xo('path','record')){ place('path',pos.path.x,Math.max(pos.path.y,Bt('record')+GB)); }
+  var mc=Math.max(pos.parties.x+40,R('path')+gapFor('funds')+P.money.w/2);
+  place('money',mc-P.money.w/2,Bt('parties')+GV);
+  if(xo('money','record')){ place('money',pos.money.x,Math.max(pos.money.y,Bt('record')+GB)); }
+  place('decisions',pos.path.x-gapFor('first steps')-P.decisions.w,0);
+  var dy=Bt('root')+GB; if(xo('decisions','governance')){ dy=Math.max(dy,Bt('governance')+64); }
+  place('decisions',pos.decisions.x,dy);
+  setPos(root,pos.root.x,pos.root.y);
+  segs=[];
+  root.kids.forEach(function(c){
+    var p=P[c.id], o=pos[c.id];
+    p.place.forEach(function(q){ setPos(q.n,o.x+q.x,o.y+q.y); });
+    p.lines.forEach(function(s){ segs.push({x1:o.x+s.x1,y1:o.y+s.y1,x2:o.x+s.x2,y2:o.y+s.y2,owner:s.owner}); });
+    p.arrows.forEach(function(s){ segs.push({x1:o.x+s.x1,y1:o.y+s.y1,x2:o.x+s.x2,y2:o.y+s.y2,to:s.to}); });
+    bands.forEach(function(b){ if(b.n===c){ b.x=o.x; b.y=o.y; b.w=o.w; b.h=o.h;
+      b.el.style.width=o.w+'px'; b.el.style.height=o.h+'px'; b.el.style.transform='translate('+o.x+'px,'+o.y+'px)'; } });
+  });
+  LP=LINKS.map(function(L){ return linkGeom(L,pos); });
+  drawEdges();
+}
+function linkGeom(L,pos){
+  var A=pos[L[0]], T=pos[L[1]], g, rootLink=(L[0]==='root'||L[1]==='root');
+  if(A.x+A.w<=T.x||T.x+T.w<=A.x){
+    var y=rootLink?Math.round(pos.root.y+pos.root.h/2):Math.round((Math.max(A.y,T.y)+Math.min(A.y+A.h,T.y+T.h))/2);
+    var right=A.x<T.x, x1=right?A.x+A.w:A.x, x2=right?T.x-1:T.x+T.w+1;
+    g={x1:x1,y1:y,x2:x2,y2:y,lx:Math.round((x1+x2)/2),ly:y-16,anchor:'middle'};
+  } else {
+    var x=rootLink?Math.round(pos.root.x+pos.root.w/2):(L[1]==='money')?Math.round(pos.money.x+pos.money.w/2):Math.round((Math.max(A.x,T.x)+Math.min(A.x+A.w,T.x+T.w))/2);
+    var down=A.y<T.y, y1=down?A.y+A.h:A.y, y2=down?T.y-1:T.y+T.h+1;
+    g={x1:x,y1:y1,x2:x,y2:y2,lx:x+14,ly:Math.round((y1+y2)/2)+5,anchor:'start'};
+  }
+  g.A=byId[L[0]]; g.B=byId[L[1]]; g.t=L[2];
+  return g;
+}
+
+function bounds(list){
+  var x0=Infinity,y0=Infinity,x1=-Infinity,y1=-Infinity;
+  list.forEach(function(n){ x0=Math.min(x0,n.x); y0=Math.min(y0,n.y); x1=Math.max(x1,n.x+n.w); y1=Math.max(y1,n.y+n.h); });
+  if(x0===Infinity){ return {x:0,y:0,w:1,h:1}; }
+  return {x:x0,y:y0,w:Math.max(1,x1-x0),h:Math.max(1,y1-y0)};
+}
+function subtree(n){ var out=[]; (function walk(m){ out.push(m); m.kids.forEach(walk); })(n); return out; }
+
+function marker(id,s,cls){ return '<marker id="'+id+'" viewBox="0 0 10 10" refX="9.5" refY="5" markerWidth="'+s+'" markerHeight="'+s+'" markerUnits="userSpaceOnUse" orient="auto"><path class="'+cls+'" d="M0 0 L10 5 L0 10 z"/></marker>'; }
+function drawEdges(){
+  var b=allBounds(), pad=300;
+  svg.setAttribute('viewBox',(b.x-pad)+' '+(b.y-pad)+' '+(b.w+2*pad)+' '+(b.h+2*pad));
+  svg.style.left=(b.x-pad)+'px'; svg.style.top=(b.y-pad)+'px';
+  svg.style.width=(b.w+2*pad)+'px'; svg.style.height=(b.h+2*pad)+'px';
+  var h='<defs>'+marker('mm-ah',10,'mm-ah')+marker('mm-ah-on',10,'mm-ah-on')+marker('mm-ahL',13,'mm-ahL')+marker('mm-ahL-on',13,'mm-ahL-on')+'</defs>';
+  var act=lensActive(), labels='';
+  segs.forEach(function(s){
+    var d='M'+s.x1+' '+s.y1+' L'+s.x2+' '+s.y2, off, lit;
+    if(s.to){
+      off=act&&s.to.lens==='off'; lit=s.to.on;
+      h+='<path class="mm-e'+(off?' off':'')+(lit?' lit':'')+'" marker-end="url(#'+(lit?'mm-ah-on':'mm-ah')+')" d="'+d+'"/>';
+    } else {
+      off=act&&s.owner.lens==='off'; lit=s.owner.on&&s.owner.kids.some(function(k){ return k.on; });
+      h+='<path class="mm-e'+(off?' off':'')+(lit?' lit':'')+'" d="'+d+'"/>';
+    }
+  });
+  LP.forEach(function(g){
+    var off=act&&(g.A.lens==='off'||g.B.lens==='off'), lit=g.A.on&&g.B.on;
+    h+='<path class="mm-e mm-link'+(off?' off':'')+(lit?' lit':'')+'" marker-end="url(#'+(lit?'mm-ahL-on':'mm-ahL')+')" d="M'+g.x1+' '+g.y1+' L'+g.x2+' '+g.y2+'"/>';
+    labels+='<text class="mm-link-lab'+(off?' off':'')+'" x="'+g.lx+'" y="'+g.ly+'" text-anchor="'+g.anchor+'">'+esc(g.t)+'</text>';
+  });
+  svg.innerHTML=h+labels;
+}
+function allBounds(){ return bounds(all.concat(bands)); }
+
+// camera
+function apply(){
+  world.style.transform='translate('+tx+'px,'+ty+'px) scale('+s+')';
+  var g=24*s; vp.style.backgroundSize=g+'px '+g+'px'; vp.style.backgroundPosition=tx+'px '+ty+'px';
+  zoomLbl.textContent=Math.round(s*100)+'%';
+}
+function cancelAnim(){ if(anim){ cancelAnimationFrame(anim); anim=null; } }
+function animateTo(ns,ntx,nty){
+  cancelAnim();
+  if(reduce){ s=ns; tx=ntx; ty=nty; apply(); return; }
+  var s0=s,x0=tx,y0=ty,t0=performance.now(),D=320;
+  function step(t){
+    var k=Math.min(1,(t-t0)/D), e=1-Math.pow(1-k,3);
+    s=s0+(ns-s0)*e; tx=x0+(ntx-x0)*e; ty=y0+(nty-y0)*e; apply();
+    anim=(k<1)?requestAnimationFrame(step):null;
+  }
+  anim=requestAnimationFrame(step);
+}
+function viewRect(){
+  var lh=lensBar.offsetHeight, W=vp.clientWidth, H=vp.clientHeight-lh;
+  if(!panel.hidden){ if(vp.clientWidth>700){ W-=Math.min(380,W-24)+24; } else { H-=panel.offsetHeight+16; } }
+  return {x0:0,y0:lh,W:Math.max(120,W),H:Math.max(120,H)};
+}
+function fitTo(b,maxS,instant){
+  var r=viewRect(), pad=40;
+  var ns=clamp(Math.min((r.W-2*pad)/b.w,(r.H-2*pad)/b.h),MIN,maxS||1);
+  var ntx=r.x0+r.W/2-(b.x+b.w/2)*ns, nty=r.y0+r.H/2-(b.y+b.h/2)*ns;
+  if(instant){ cancelAnim(); s=ns; tx=ntx; ty=nty; apply(); } else { animateTo(ns,ntx,nty); }
+}
+function fitAll(instant){ fitTo(allBounds(),1,instant); }
+function zoomAt(px,py,f){ var ns=clamp(s*f,MIN,MAX), k=ns/s; tx=px-(px-tx)*k; ty=py-(py-ty)*k; s=ns; apply(); }
+function zoomCenter(f){ var r=viewRect(); cancelAnim(); zoomAt(r.x0+r.W/2,r.y0+r.H/2,f); }
+function centerOn(n){
+  var r=viewRect(), ns=Math.max(s,0.85);
+  animateTo(ns, r.x0+r.W/2-(n.x+n.w/2)*ns, r.y0+r.H/2-(n.y+n.h/2)*ns);
+}
+function ensureInView(n){
+  var r=viewRect(), m=36;
+  var sx=n.x*s+tx, sy=n.y*s+ty, sw=n.w*s, sh=n.h*s, dx=0, dy=0;
+  if(sx<r.x0+m){ dx=r.x0+m-sx; } else if(sx+sw>r.x0+r.W-m){ dx=r.x0+r.W-m-(sx+sw); }
+  if(sy<r.y0+m){ dy=r.y0+m-sy; } else if(sy+sh>r.y0+r.H-m){ dy=r.y0+r.H-m-(sy+sh); }
+  if(dx||dy){ animateTo(s,tx+dx,ty+dy); }
+}
+
+// selection and side panel
+function select(n){
+  if(selected){ selected.el.classList.remove('sel'); }
+  selected=n; n.el.classList.add('sel');
+  all.forEach(function(m){ m.on=false; });
+  var p=n; while(p){ p.on=true; p=p.parent; }
+  drawEdges(); openPanel(n);
+}
+function textBlock(d){
+  var h='';
+  if(d.d){ (Array.isArray(d.d)?d.d:[d.d]).forEach(function(p){ h+='<p>'+esc(p)+'</p>'; }); }
+  if(d.b){ h+='<ul>'+d.b.map(function(x){ return '<li>'+esc(x)+'</li>'; }).join('')+'</ul>'; }
+  return h;
+}
+function openPanel(n){
+  var crumbs=[], p=n.parent; while(p){ crumbs.unshift(p); p=p.parent; }
+  var h='<button type="button" class="mm-btn pp-close" data-close="1" aria-label="Close">×</button>';
+  if(crumbs.length){ h+='<div class="pp-crumbs">'+crumbs.map(function(c){ return '<button type="button" data-go="'+c.id+'">'+esc(c.d.t)+'</button>'; }).join('<span aria-hidden="true">›</span>')+'</div>'; }
+  h+='<div class="pp-head"><h3>'+esc(n.d.t)+'</h3>'+chip(n.d.st)+'</div>';
+  if(n.d.s){ h+='<p class="pp-sub">'+esc(n.d.s)+'</p>'; }
+  var body=textBlock(n.d); if(body){ h+='<div class="pp-body">'+body+'</div>'; }
+  var tg=n.d.g||[];
+  if(tg.length){
+    h+='<div class="pp-threads"><span class="kicker">Highlight related</span><div class="pp-chips">'+tg.map(function(t){
+      return '<button type="button" class="mm-lchip" data-thread="'+t+'" aria-pressed="'+(lens.threads[t]?'true':'false')+'">'+esc(TNAME[t])+'</button>';
+    }).join('')+'</div></div>';
+  }
+  if(n.kids.length){
+    h+='<div class="pp-kids"><span class="kicker">Inside</span>'+n.kids.map(function(c){
+      return '<button type="button" data-go="'+c.id+'"><b>'+esc(c.d.t)+'</b>'+(c.d.s?'<span>'+esc(c.d.s)+'</span>':'')+'</button>';
+    }).join('')+'</div>';
+  }
+  h+='<div class="pp-actions">';
+  if(n.d.sec){ h+='<button type="button" class="btn" data-plan="'+esc(n.d.sec)+'">Open in plan</button>'; }
+  h+='<button type="button" class="btn" data-fit="'+n.id+'">Zoom to this</button></div>';
+  panel.innerHTML=h; panel.hidden=false; panel.scrollTop=0; hint.hidden=true;
+}
+function closePanel(){
+  panel.hidden=true; hint.hidden=false;
+  if(selected){ selected.el.classList.remove('sel'); selected=null; }
+  all.forEach(function(m){ m.on=false; }); drawEdges();
+}
+function activate(n){ touched=true; select(n); ensureInView(n); }
+function goTo(n){ if(!n){ return; } touched=true; select(n); centerOn(n); }
+
+panel.addEventListener('click',function(e){
+  var t=e.target.closest('button'); if(!t){ return; }
+  if(t.getAttribute('data-close')){ closePanel(); return; }
+  if(t.getAttribute('data-go')){ goTo(byId[t.getAttribute('data-go')]); return; }
+  if(t.getAttribute('data-thread')){ var th=t.getAttribute('data-thread'); lens.threads={}; lens.threads[th]=true; lens.status={}; applyLens(true); if(selected){ openPanel(selected); } return; }
+  if(t.getAttribute('data-plan')){ openPlan(t.getAttribute('data-plan')); return; }
+  if(t.getAttribute('data-fit')){ fitTo(bounds(subtree(byId[t.getAttribute('data-fit')])),1.4); }
+});
+
+// highlight threads
+function flat(d){ return (Array.isArray(d.d)?d.d.join(' '):(d.d||''))+' '+(d.b?d.b.join(' '):''); }
+function lensActive(){ return keys(lens.threads).length>0||keys(lens.status).length>0||!!lens.q; }
+function matches(n){
+  if(keys(lens.threads).length&&!(n.d.g||[]).some(function(t){ return lens.threads[t]; })){ return false; }
+  if(keys(lens.status).length&&!(n.d.st&&lens.status[SGROUP[n.d.st]])){ return false; }
+  if(lens.q&&(n.d.t+' '+(n.d.s||'')+' '+flat(n.d)).toLowerCase().indexOf(lens.q)<0){ return false; }
+  return true;
+}
+function syncChips(){
+  Array.prototype.forEach.call(lensBar.querySelectorAll('[data-thread]'),function(b){ b.setAttribute('aria-pressed',String(!!lens.threads[b.getAttribute('data-thread')])); });
+  Array.prototype.forEach.call(lensBar.querySelectorAll('[data-status]'),function(b){ b.setAttribute('aria-pressed',String(!!lens.status[b.getAttribute('data-status')])); });
+  modeBtn.setAttribute('aria-pressed',String(lens.hide));
+  clearBtn.disabled=!lensActive();
+}
+function applyLens(fit){
+  var act=lensActive(), hits=[];
+  all.forEach(function(n){ n.lens=''; });
+  if(act){
+    all.forEach(function(n){ if(n!==root&&matches(n)){ n.lens='on'; hits.push(n); } });
+    hits.forEach(function(hn){ var p=hn.parent; while(p){ if(p.lens!=='on'){ p.lens='path'; } p=p.parent; } });
+    all.forEach(function(n){ if(!n.lens){ n.lens='off'; } });
+    root.lens='path';
+  }
+  all.forEach(function(n){ var c=n.el.classList; c.toggle('lens-on',n.lens==='on'); c.toggle('lens-path',n.lens==='path'); c.toggle('lens-off',n.lens==='off'); });
+  bands.forEach(function(b){ b.el.classList.toggle('off',act&&b.n.lens==='off'); });
+  vp.classList.toggle('hide-rest',act&&lens.hide);
+  drawEdges(); syncChips();
+  countEl.textContent=act?(hits.length?(hits.length+(hits.length===1?' part highlighted':' parts highlighted')):'Nothing matches'):'';
+  if(!vp.hidden){ qc.textContent=lens.q?(hits.length+(hits.length===1?' match':' matches')):''; }
+  if(fit&&act&&hits.length){ fitTo(bounds(hits),1); }
+}
+function makeChips(){
+  var th=document.getElementById('mm-threads'), stg=document.getElementById('mm-status');
+  THREADS.forEach(function(t){
+    var b=document.createElement('button'); b.type='button'; b.className='mm-lchip'; b.textContent=t[1];
+    b.setAttribute('data-thread',t[0]); b.setAttribute('aria-pressed','false');
+    b.addEventListener('click',function(){ touched=true; toggleKey(lens.threads,t[0]); applyLens(true); });
+    th.appendChild(b);
+  });
+  STATUSES.forEach(function(st){
+    var b=document.createElement('button'); b.type='button'; b.className='mm-lchip '+st[2]; b.textContent=st[1];
+    b.setAttribute('data-status',st[0]); b.setAttribute('aria-pressed','false');
+    b.addEventListener('click',function(){ touched=true; toggleKey(lens.status,st[0]); applyLens(true); });
+    stg.appendChild(b);
+  });
+  modeBtn.addEventListener('click',function(){ lens.hide=!lens.hide; applyLens(false); });
+  clearBtn.addEventListener('click',function(){
+    lens.threads={}; lens.status={};
+    if(q.value){ q.value=''; q.dispatchEvent(new Event('input')); } else { applyLens(false); }
+    fitAll();
+  });
+}
+
+// pan and zoom
+var ptrs={}, panStart=null, pinch=null;
+function ptrList(){ return keys(ptrs).map(function(k){ return ptrs[k]; }); }
+function dist(a,b){ return Math.hypot(a.x-b.x,a.y-b.y); }
+vp.addEventListener('pointerdown',function(e){
+  if(e.target.closest('.mm-ui')){ return; }
+  if(e.pointerType==='mouse'&&e.button!==0){ return; }
+  cancelAnim(); touched=true;
+  ptrs[e.pointerId]={x:e.clientX,y:e.clientY};
+  var l=ptrList();
+  if(l.length===1){ panStart={x:e.clientX,y:e.clientY,tx:tx,ty:ty}; dragMoved=false; }
+  else if(l.length===2){
+    var r=vp.getBoundingClientRect();
+    pinch={d:dist(l[0],l[1]),s:s,tx:tx,ty:ty,mx:(l[0].x+l[1].x)/2-r.left,my:(l[0].y+l[1].y)/2-r.top};
+    dragMoved=true; panStart=null;
+  }
+});
+vp.addEventListener('pointermove',function(e){
+  if(!ptrs[e.pointerId]){ return; }
+  ptrs[e.pointerId]={x:e.clientX,y:e.clientY};
+  var l=ptrList();
+  if(pinch&&l.length>=2){
+    var r=vp.getBoundingClientRect();
+    var mx=(l[0].x+l[1].x)/2-r.left, my=(l[0].y+l[1].y)/2-r.top;
+    var ns=clamp(pinch.s*dist(l[0],l[1])/pinch.d,MIN,MAX), k=ns/pinch.s;
+    tx=pinch.mx-(pinch.mx-pinch.tx)*k+(mx-pinch.mx);
+    ty=pinch.my-(pinch.my-pinch.ty)*k+(my-pinch.my);
+    s=ns; apply(); return;
+  }
+  if(panStart){
+    var dx=e.clientX-panStart.x, dy=e.clientY-panStart.y;
+    if(!dragMoved&&Math.abs(dx)+Math.abs(dy)>5){
+      dragMoved=true; vp.classList.add('grabbing');
+      try{ vp.setPointerCapture(e.pointerId); }catch(err){}
+    }
+    if(dragMoved){ tx=panStart.tx+dx; ty=panStart.ty+dy; apply(); }
+  }
+});
+function endPtr(e){
+  if(!ptrs[e.pointerId]){ return; }
+  delete ptrs[e.pointerId];
+  var l=ptrList();
+  if(l.length<2){ pinch=null; }
+  if(l.length===1){ panStart={x:l[0].x,y:l[0].y,tx:tx,ty:ty}; }
+  if(l.length===0){ panStart=null; vp.classList.remove('grabbing'); setTimeout(function(){ dragMoved=false; },0); }
+}
+vp.addEventListener('pointerup',endPtr);
+vp.addEventListener('pointercancel',endPtr);
+vp.addEventListener('wheel',function(e){
+  if(e.target.closest('.mm-panel')||e.target.closest('.mm-lens')){ return; }
+  e.preventDefault(); cancelAnim(); touched=true;
+  var r=vp.getBoundingClientRect();
+  if(e.ctrlKey||e.metaKey){ zoomAt(e.clientX-r.left,e.clientY-r.top,Math.exp(-e.deltaY*0.008)); }
+  else { var k=(e.deltaMode===1)?16:1; tx-=e.deltaX*k; ty-=e.deltaY*k; apply(); }
+},{passive:false});
+var gs=null;
+vp.addEventListener('gesturestart',function(e){ e.preventDefault(); gs={s:s}; });
+vp.addEventListener('gesturechange',function(e){ e.preventDefault(); if(!gs){ return; } var r=vp.getBoundingClientRect(); zoomAt(e.clientX-r.left,e.clientY-r.top,clamp(gs.s*e.scale,MIN,MAX)/s); });
+vp.addEventListener('gestureend',function(e){ e.preventDefault(); gs=null; });
+vp.addEventListener('dblclick',function(e){
+  if(e.target.closest('.mm-node')||e.target.closest('.mm-ui')){ return; }
+  var r=vp.getBoundingClientRect(); cancelAnim(); zoomAt(e.clientX-r.left,e.clientY-r.top,1.6);
+});
+
+document.getElementById('mm-in').addEventListener('click',function(){ zoomCenter(1.25); });
+document.getElementById('mm-out').addEventListener('click',function(){ zoomCenter(0.8); });
+document.getElementById('mm-fit').addEventListener('click',function(){ fitAll(); });
+
+document.addEventListener('keydown',function(e){
+  if(vp.hidden){ return; }
+  var tg=e.target; if(tg&&(tg.tagName==='INPUT'||tg.tagName==='TEXTAREA')){ return; }
+  if(e.key==='+'||e.key==='='){ zoomCenter(1.25); e.preventDefault(); }
+  else if(e.key==='-'||e.key==='_'){ zoomCenter(0.8); e.preventDefault(); }
+  else if(e.key==='0'){ fitAll(); e.preventDefault(); }
+  else if(e.key==='Escape'){ closePanel(); }
+  else if(e.key==='ArrowLeft'){ tx+=60; apply(); e.preventDefault(); }
+  else if(e.key==='ArrowRight'){ tx-=60; apply(); e.preventDefault(); }
+  else if(e.key==='ArrowUp'){ ty+=60; apply(); e.preventDefault(); }
+  else if(e.key==='ArrowDown'){ ty-=60; apply(); e.preventDefault(); }
+});
+
+q.addEventListener('input',function(){ lens.q=q.value.trim().toLowerCase(); if(built){ applyLens(true); } });
+
+// views
+function init(){
+  if(built){ return; }
+  built=true;
+  root=build(DATA,null,0,'c');
+  all.forEach(makeEl);
+  root.kids.forEach(function(c){ var el=document.createElement('div'); el.className='mm-band'; el.setAttribute('aria-hidden','true'); world.insertBefore(el,svg); bands.push({n:c,el:el,x:0,y:0,w:0,h:0}); });
+  makeChips();
+  sizeNodes(); layout(); applyLens(false); fitAll(true);
+  if(document.fonts&&document.fonts.ready){ document.fonts.ready.then(function(){ sizeNodes(); layout(); applyLens(false); if(!touched){ fitAll(true); } }); }
+}
+function showView(v){
+  var map=(v==='map');
+  planView.hidden=map; vp.hidden=!map;
+  tabPlan.setAttribute('aria-selected',String(!map)); tabMap.setAttribute('aria-selected',String(map));
+  if(map){ setTop(); init(); }
+  try{
+    if(map){ if(location.hash.indexOf('#mindmap')!==0){ history.replaceState(null,'','#mindmap'); } }
+    else if(location.hash.indexOf('#mindmap')===0){ history.replaceState(null,'',location.pathname+location.search); }
+  }catch(err){}
+  q.dispatchEvent(new Event('input'));
+}
+function openPlan(sec){
+  showView('plan');
+  var el=document.getElementById(sec);
+  if(el){ el.scrollIntoView({behavior:reduce?'auto':'smooth',block:'start'}); }
+}
+tabPlan.addEventListener('click',function(){ showView('plan'); });
+tabMap.addEventListener('click',function(){ showView('map'); });
+window.addEventListener('hashchange',function(){
+  if(location.hash.indexOf('#mindmap')===0){ showView('map'); return; }
+  if(!vp.hidden){ showView('plan'); var el=document.getElementById(location.hash.slice(1)); if(el){ el.scrollIntoView(); } }
+});
+if(location.hash.indexOf('#mindmap')===0){ showView('map'); }
+})();
+
+</script>
+</body>
+</html>
